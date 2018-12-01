@@ -19,8 +19,8 @@ def main():
         # 1) Cnots
         [Rprime[i].cnot(R[i]) for i in range(N)]
 
-        # 2) measure R
-        measurements = [qb.measure() for qb in R]
+        # 2) measure R, keep qubit !
+        measurements = [qb.measure(inplace=True) for qb in R]
 
         # 3) Swap
         R, Rprime = Rprime, R
@@ -40,5 +40,10 @@ def main():
         
 
         print("Bob output: ", R[0].measure(), R[1].measure())
+
+
+
+        #Send a flag to alice to say that the transaction is done
+        #bob.sendClassical("Alice", 0)
 
 main()

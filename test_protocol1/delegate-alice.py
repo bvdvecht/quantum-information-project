@@ -30,6 +30,11 @@ def main():
         [alice.sendQubit(qb, "Bob") for qb in qubits]
 
         print("Alice done")
+        print("blablabl")
+
+        #Holds alice while bob has not finished, timeout 10sec
+        #flag = alice.recvClassical()
+        #print("Connection closed")
 
 
 main()
