@@ -24,8 +24,8 @@ def send_D_Plus(alice, m, D, key, key_prev):
     D.applyOn(qubits)
     
     # create encryption gates
-    Z_prev = TensorGate(['Z' if r else 'I' for r in key_prev])
-    Z = TensorGate(['Z' if r else 'I' for r in key])
+    Z_prev = TensorGate(['Z' if bool(r) else 'I' for r in key_prev])
+    Z = TensorGate(['Z' if bool(r) else 'I' for r in key])
 
     Z_prev.applyOn(qubits)
     Z.applyOn(qubits)
@@ -51,7 +51,7 @@ def createNextGate(m, D, measurements):
 def main():
     with CQCConnection("Alice") as alice:  
         m = 2
-        l = 2
+        l = 1
 
         # HI = TensorGate(['H', 'I'])
         # CNOT = EntangleGate('CNOT')
@@ -81,7 +81,7 @@ def main():
         for i in range(l):
             key_prev = key
             # generate new random key
-            key = [ bool(randint(0, 1)) for i in range(m) ]
+            key = [ randint(0, 1) for i in range(m) ]
 
             send_D_Plus(alice, m, D, key, key_prev)
 
@@ -109,11 +109,13 @@ def main():
         # result = ZXD|psi>
 
         # undo Z
+        print('undoing Z:', key)
         for i in range(m):
             if key[i] == 1: # Z = Z_l = last key
                 result[i].Z()
 
         # undo X
+        print('undoing X:', cumul_meas)
         for i in range(m):
             if cumul_meas[i] == 1:
                 result[i].X()

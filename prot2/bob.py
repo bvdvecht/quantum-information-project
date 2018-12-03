@@ -17,7 +17,7 @@ def teleport_proc(bob, m, R, Rprime):
 def main():
     with CQCConnection("Bob") as bob:
         m = 2
-        l = 2
+        l = 1
 
         R = []
 

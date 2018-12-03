@@ -92,6 +92,7 @@ def main():
             result.append(alice.recvQubit())
 
         # result = XD|psi>, undo X:
+        print('undoing X:', cumul_meas)
         for i in range(m):
             if cumul_meas[i] == 1:
                 result[i].X()
