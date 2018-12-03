@@ -3,13 +3,14 @@ from SimulaQron.cqc.pythonLib.cqc import CQCConnection, qubit
 def main():
     with CQCConnection("Bob") as bob:
         
-        N = 2
+        N = 1
 
         #Register of alices qubits
         Rprime = []
 
-        #Bob register
+        #Bob register : We want to apply the gate to the state |+> (here simple Z gate)
         R = [qubit(bob) for i in range(N)]
+        R[0].H()
 
         #Receive D|+> of Alice
         for i in range(N):
@@ -33,15 +34,15 @@ def main():
         #To recover D|psi>, just apply X'
 
         for i in range(N):
-                if measurements[i]==0:
+                if measurements[i]==1:
                         R[i].X()
 
-        print("Bob done")
         
+        #Measure in the hadamard basis
+        R[0].H()
+        print("Bob output: ", R[0].measure())
 
-        print("Bob output: ", R[0].measure(), R[1].measure())
-
-
+        print("Bob done")
 
         #Send a flag to alice to say that the transaction is done
         #bob.sendClassical("Alice", 0)

@@ -7,6 +7,7 @@ def main():
 
         #Bob register
         R = [qubit(bob) for i in range(N)]
+        [qb.H() for qb in R]
 
         #Bob measurements
         cumulated_measurements = [0 for i in range(N)]
@@ -19,11 +20,12 @@ def main():
 
                 #Receive D|+> of Alice 
 
+                Rprime = []
+
                 for i in range(N):
-                        if l==0:
-                                Rprime.append(bob.recvQubit())
-                        else:
-                                Rprime[l] = bob.recvQubit()
+                        print("receiving qubit")
+                        Rprime.append(bob.recvQubit())
+                        print("qubit received")
 
                 #Teleportation procedure
                 # 1) Cnots
@@ -34,9 +36,13 @@ def main():
 
                 # 3) Swap
                 R, Rprime = Rprime, R
+
+                #Releasing Rprime qubits
+                [qb.release() for qb in Rprime]
                 
                 # 4) send measurements to Alice
-                bob.sendClassical("Alice", measurements)
+                for i in range(N):
+                        bob.sendClassical("Alice", measurements[i])
 
                 # XOR measurements to cumulated_measurements for step
                 cumulated_measurements = [(cumulated_measurements[i] + measurements[i])%2 for i in range(N)]
@@ -49,12 +55,12 @@ def main():
         #To recover D|psi>, just apply X'
 
         for i in range(N):
-                if cumulated_measurements[i]==0:
+                if cumulated_measurements[i]==1:
                         R[i].X()
 
         print("Bob done")
         
-
+        [qb.H() for qb in R]
         print("Bob output: ", R[0].measure(), R[1].measure())
 
 main()

@@ -3,7 +3,7 @@ from parameters import N, L
 
 
 #Here, we want to teleport a simple oracle
-def gate(qubits):
+'''def gate(qubits):
         [qb.H() for qb in qubits]
         qubits[0].cphase(qubits[1])
         [qb.H() for qb in qubits]
@@ -16,20 +16,23 @@ def gate(qubits):
         [qb.H() for qb in qubits]
 
 def gate_dag(qubits):
+        gate(qubits)'''
+
+def gate(qubits):
+        [qb.Z() for qb in qubits]
+
+def gate_dag(qubits):
         gate(qubits)
         
 
 
 def main():
+
     with CQCConnection("Alice") as alice:
-
-        previous_measurements = []
-
-        totalqubits = [ [qubit(alice) for i in range(N)] for j in range(L)]
-        
+  
         for l in range(L):
 
-                qubits = totalqubits[l]
+                qubits = [qubit(alice) for i in range(N)]
 
                 #Maximal superposition state
                 [qb.H() for qb in qubits]
@@ -50,17 +53,21 @@ def main():
 
 
 
-
-                [alice.sendQubit(qb, "Bob") for qb in qubits]
+                print("sending qubits")
+                for qb in qubits:
+                        alice.sendQubit(qb, "Bob")
 
 
                 #Receive Bob measurements
-                previous_measurements = list(alice.recvClassical())
+                previous_measurements = []
+                for i in range(N):
+                        previous_measurements.append(alice.recvClassical())
+
+                print(previous_measurements)
 
                 print("Alice: Iteration", l, "done")
 
 
         print("Alice done")
-
 
 main()
