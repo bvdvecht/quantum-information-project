@@ -15,13 +15,17 @@ class CustomGate(PrimitiveGate):
 
 def send_D_Plus(alice, m, D):
     alice.release_all_qubits()
+
+    # create |+>^tensor(m)
     qubits = [qubit(alice) for i in range(m)]
     [ qb.H() for qb in qubits ]
+
     D.applyOn(qubits)
-    print('sending qubits to Bob')
+
     for qb in qubits:
+        print('alice send_D_Plus: send qbit')
         alice.sendQubit(qb, "Bob")
-    print('qubit sent to Bob')
+        print('alice send_D_Plus: qbit sent')
 
 def createNextGate(m, D, measurements):
     # create tensor of X's (if meas=1) and I's (if meas=0)
@@ -38,7 +42,7 @@ def createNextGate(m, D, measurements):
 def main():
     with CQCConnection("Alice") as alice:  
         m = 2
-        l = 2
+        l = 1
 
         # HI = TensorGate(['H', 'I'])
         # CNOT = EntangleGate('CNOT')
@@ -52,28 +56,33 @@ def main():
 
         # send psi to Bob
         for qb in psi:
+            print('alice: send psi qubit')
             alice.sendQubit(qb, "Bob")
+            print('alice: psi qubit sent')
 
         # gate to be applied to psi
         D = TensorGate(['Z', 'I'])
 
         # sum of measurement results from Bob
-        cumul_meas = [0 for i in range(m)]
+        cumul_meas = [ 0 for i in range(m) ]
 
         # protocol 1
         for i in range(l):
             send_D_Plus(alice, m, D)
 
-            # for now, since classical messages seem a bit buggy
-            measurements = [ bool(randint(0, 1)) for i in range(m) ]
-            # for i in range(m):
-            #    measurements.append(alice.recvClassical(close_after=False))
+            measurements = []
+            for i in range(m):
+                print("alice: receive measurement")
+                meas = alice.recvClassical(close_after=True, timout=10)
+                print('meas', int.from_bytes(meas, byteorder='big'))
+                measurements.append(int.from_bytes(meas, byteorder='big'))
+                print("alice: measurement received")
 
             # XOR measurements to cumul_meas for step
             cumul_meas = [(cumul_meas[i] + measurements[i])%2 for i in range(m)]
 
             # sleep since we don't use recvClassical atm which would block
-            time.sleep(5)
+            # time.sleep(5)
 
             D = createNextGate(m, D, measurements)
 

@@ -30,10 +30,11 @@ def send_D_Plus(alice, m, D, key, key_prev):
     Z_prev.applyOn(qubits)
     Z.applyOn(qubits)
 
-    print('send_D_Plus: send qbit')
+    
     for qb in qubits:
+        print('alice send_D_Plus: send qbit')
         alice.sendQubit(qb, "Bob")
-    print('send_D_Plus: qbit sent')
+        print('alice send_D_Plus: qbit sent')
 
 def createNextGate(m, D, measurements):
     # create tensor of X's (if meas=1) and I's (if meas=0)
@@ -64,7 +65,9 @@ def main():
 
         # send psi to Bob
         for qb in psi:
+            print('alice: send psi qubit')
             alice.sendQubit(qb, "Bob")
+            print('alice: psi qubit sent')
 
         # gate to be applied to psi
         D = TensorGate(['Z', 'I'])
@@ -82,14 +85,12 @@ def main():
 
             send_D_Plus(alice, m, D, key, key_prev)
 
-            # for now, since classical messages seem a bit buggy
-            # measurements = [ bool(randint(0, 1)) for i in range(m) ]
             measurements = []
             for i in range(m):
                 print("alice: receive measurement")
                 meas = alice.recvClassical(close_after=True, timout=10)
-                print('meas', meas)
-                measurements.append(meas)
+                print('meas', int.from_bytes(meas, byteorder='big'))
+                measurements.append(int.from_bytes(meas, byteorder='big'))
                 print("alice: measurement received")
 
             # XOR measurements to cumul_meas for step

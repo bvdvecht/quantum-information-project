@@ -3,9 +3,9 @@ from SimulaQron.cqc.pythonLib.cqc import CQCConnection, qubit
 def recv_D_Plus(bob, m):
     Rprime = []
     for i in range(m):
-        print("recv_D_Plus: receive qubit")
+        print("bob recv_D_Plus: receive qubit")
         Rprime.append(bob.recvQubit())
-        print("recv_D_Plus: qubit received")
+        print("bob recv_D_Plus: qubit received")
 
     return Rprime
 
@@ -23,16 +23,16 @@ def main():
 
         # receive initial psi from Alice
         for i in range(m):
-            print("receiving qubit")
+            print("bob: receiving psi qubit")
             R.append(bob.recvQubit())
-            print("qubit received")
+            print("bob: psi qubit received")
 
         
 
         for i in range(l):
             Rprime = recv_D_Plus(bob, m)
             measurements = teleport_proc(bob, m, R, Rprime)
-            for i in range(1):
+            for i in range(m):
                 print("bob: send measurement")
                 bob.sendClassical("Alice", measurements[i], close_after=True)
                 print("bob: measurement sent")
