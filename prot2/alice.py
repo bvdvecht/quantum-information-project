@@ -51,7 +51,7 @@ def createNextGate(m, D, measurements):
 def main():
     with CQCConnection("Alice") as alice:  
         m = 2
-        l = 1
+        l = 3
 
         # HI = TensorGate(['H', 'I'])
         # CNOT = EntangleGate('CNOT')
@@ -81,12 +81,12 @@ def main():
         for i in range(l):
             key_prev = key
             # generate new random key
-            key = [ randint(0, 1) for i in range(m) ]
+            key = [ randint(0, 1) for k in range(m) ]
 
             send_D_Plus(alice, m, D, key, key_prev)
 
             measurements = []
-            for i in range(m):
+            for j in range(m):
                 print("alice: receive measurement")
                 meas = alice.recvClassical(close_after=True, timout=10)
                 print('meas', int.from_bytes(meas, byteorder='big'))
@@ -94,7 +94,7 @@ def main():
                 print("alice: measurement received")
 
             # XOR measurements to cumul_meas for step
-            cumul_meas = [(cumul_meas[i] + measurements[i])%2 for i in range(m)]
+            cumul_meas = [(cumul_meas[k] + measurements[k])%2 for k in range(m)]
 
             # sleep since we don't use recvClassical atm which would block
             # time.sleep(5)

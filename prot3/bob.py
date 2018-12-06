@@ -21,9 +21,9 @@ def protocol2_recv(bob, m, p, l, R):
     for i in range(l):
         Rprime = recv_D_Plus(bob, m)
         measurements = teleport_proc(bob, m, subR, Rprime)
-        for i in range(m):
+        for j in range(m):
             print("bob: send measurement")
-            bob.sendClassical("Alice", measurements[i], close_after=True)
+            bob.sendClassical("Alice", measurements[j], close_after=True)
             print("bob: measurement sent")
 
         subR, Rprime = Rprime, subR
@@ -35,7 +35,7 @@ def protocol2_recv(bob, m, p, l, R):
     tempR.extend(R[(p+1)*m:-1])
     R = tempR
 
-    print("Bob done")
+    [qb.release for qb in Rprime]
 
 
 def main():
@@ -44,7 +44,7 @@ def main():
         N = 2 #Number of qubits
         M = 2 #Number of sub-qubits : Must be a divider of N
         P = int(N/M)
-        L = 3 #Number of steps for the protocol2
+        L = 1 #Number of steps for the protocol2
 
         R = []
 
@@ -74,7 +74,12 @@ def main():
             #Bob applies H
             [R[i].H() for i in range(N)]
 
+
             for p in range(P):
+
+                #Wait for alice to be ready and avoid timeout
+                print("Bob: waiting for alice for p =", p)
+                flag = bob.recvClassical(close_after=True, timout=10)
 
                 #Engage protocol 2
                 protocol2_recv(bob, M, p, L, R)

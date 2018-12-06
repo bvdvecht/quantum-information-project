@@ -116,12 +116,12 @@ def protocol2(alice, m, l, D):
     for i in range(l):
         key_prev = key
         # generate new random key
-        key = [ randint(0, 1) for i in range(m) ]
+        key = [ randint(0, 1) for j in range(m) ]
 
         send_D_Plus(alice, m, D, key, key_prev)
 
         measurements = []
-        for i in range(m):
+        for j in range(m):
             print("alice: receive measurement")
             meas = alice.recvClassical(close_after=True, timout=10)
             print('meas', int.from_bytes(meas, byteorder='big'))
@@ -129,7 +129,7 @@ def protocol2(alice, m, l, D):
             print("alice: measurement received")
 
         # XOR measurements to cumul_meas for step
-        cumul_meas = [(cumul_meas[i] + measurements[i])%2 for i in range(m)]
+        cumul_meas = [(cumul_meas[k] + measurements[k])%2 for k in range(m)]
 
         # sleep since we don't use recvClassical atm which would block
         # time.sleep(5)
@@ -163,11 +163,11 @@ def protocol2(alice, m, l, D):
 def main():
     with CQCConnection("Alice") as alice:  
 
-        J = 4 #Depth
+        J = 2 #Depth
         N = 2 #Number of qubits
         M = 2 #Number of sub-qubits : Must be a divider of N
         P = int(N/M)
-        L = 3 #Number of steps for the protocol2
+        L = 1 #Number of steps for the protocol2
 
 
         #Recording of the zj and xj, i.e. exponents of the Z and X gates applied in the correction step
@@ -231,6 +231,10 @@ def main():
             for p in range(P):
 
                 targetD = compute_target_gate(j, p, M, N, X_record, Z_record, D_gates[j][p])
+
+
+                #Send flag to Bob when ready
+                alice.sendClassical("Bob", 1, close_after=True)
 
 
                 #Alice engages protocol 2 and saves the teleportation byproducts and her key

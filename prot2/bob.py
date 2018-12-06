@@ -17,7 +17,7 @@ def teleport_proc(bob, m, R, Rprime):
 def main():
     with CQCConnection("Bob") as bob:
         m = 2
-        l = 1
+        l = 3
 
         R = []
 
@@ -32,9 +32,9 @@ def main():
         for i in range(l):
             Rprime = recv_D_Plus(bob, m)
             measurements = teleport_proc(bob, m, R, Rprime)
-            for i in range(m):
+            for j in range(m):
                 print("bob: send measurement")
-                bob.sendClassical("Alice", measurements[i], close_after=True)
+                bob.sendClassical("Alice", measurements[j], close_after=True)
                 print("bob: measurement sent")
 
             R, Rprime = Rprime, R
