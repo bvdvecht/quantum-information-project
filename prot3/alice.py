@@ -163,7 +163,7 @@ def protocol2(alice, m, l, D):
 def main():
     with CQCConnection("Alice") as alice:  
 
-        J = 2 #Depth
+        J = 3 #Depth
         N = 2 #Number of qubits
         M = 2 #Number of sub-qubits : Must be a divider of N
         P = int(N/M)
