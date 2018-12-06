@@ -61,7 +61,7 @@ def main():
                 #Receive Bob measurements
                 previous_measurements = []
                 for i in range(N):
-                        previous_measurements.append(alice.recvClassical())
+                        previous_measurements.append(int(alice.recvClassical()))
 
                 print(previous_measurements)
 
