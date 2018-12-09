@@ -11,7 +11,7 @@ def recv_D_Plus(bob, m):
 
 def teleport_proc(bob, m, R, Rprime):
     [ Rprime[i].cnot(R[i]) for i in range(m) ]
-    return [ qb.measure(inplace=True) for qb in R ]
+    return [ qb.measure(inplace=False) for qb in R ]
 
 
 def protocol2_recv(bob, m, p, l, R):

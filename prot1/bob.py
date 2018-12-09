@@ -11,13 +11,13 @@ def recv_D_Plus(bob, m):
 
 def teleport_proc(bob, m, R, Rprime):
     [ Rprime[i].cnot(R[i]) for i in range(m) ]
-    return [ qb.measure(inplace=True) for qb in R ]
+    return [ qb.measure(inplace=False) for qb in R ]
 
 
 def main():
     with CQCConnection("Bob") as bob:
         m = 2
-        l = 1
+        l = 5
 
         R = []
 
@@ -31,6 +31,7 @@ def main():
 
         for i in range(l):
             Rprime = recv_D_Plus(bob, m)
+            print('bob Rprime:', Rprime)
             measurements = teleport_proc(bob, m, R, Rprime)
             for i in range(m):
                 print("bob: send measurement")

@@ -14,10 +14,13 @@ class CustomGate(PrimitiveGate):
 
 
 def send_D_Plus(alice, m, D):
-    alice.release_all_qubits()
+    # print('alice: releasing all qubits')
+    # alice.release_all_qubits()
 
+    print('alice: creating new qubits')
     # create |+>^tensor(m)
     qubits = [qubit(alice) for i in range(m)]
+    print('alice:', len(qubits), 'qubits created')
     [ qb.H() for qb in qubits ]
 
     D.applyOn(qubits)
@@ -29,12 +32,14 @@ def send_D_Plus(alice, m, D):
 
 def createNextGate(m, D, measurements):
     # create tensor of X's (if meas=1) and I's (if meas=0)
-    X = TensorGate(['X' if m else 'I' for m in measurements])
+    X = TensorGate(['X' if meas else 'I' for meas in measurements])
     D_dagger = copy.copy(D)
+    # print('alice: D_dagger:', D_dagger)
     D_dagger.adjoint = True
 
     # construct D_{l+1} = X_lD_lX_lD_dagger_l
     newD = CompositeGate([X, D, X, D_dagger])
+    # print('alice: newD:', newD)
 
     return newD
 
@@ -42,13 +47,7 @@ def createNextGate(m, D, measurements):
 def main():
     with CQCConnection("Alice") as alice:  
         m = 2
-        l = 1
-
-        # HI = TensorGate(['H', 'I'])
-        # CNOT = EntangleGate('CNOT')
-        # G = CompositeGate([CNOT, HI])
-        # G.applyOn(qubits)
-        # print([qb.measure() for qb in qubits])
+        l = 5
 
         # psi = |+>^tensor(m)
         psi = [ qubit(alice) for i in range(m) ]
@@ -62,6 +61,7 @@ def main():
 
         # gate to be applied to psi
         D = TensorGate(['Z', 'I'])
+        print('initial gate D:', D)
 
         # sum of measurement results from Bob
         cumul_meas = [ 0 for i in range(m) ]
@@ -81,9 +81,6 @@ def main():
             # XOR measurements to cumul_meas for step
             cumul_meas = [(cumul_meas[i] + measurements[i])%2 for i in range(m)]
 
-            # sleep since we don't use recvClassical atm which would block
-            # time.sleep(5)
-
             D = createNextGate(m, D, measurements)
 
         
@@ -97,7 +94,7 @@ def main():
             if cumul_meas[i] == 1:
                 result[i].X()
 
-        # measure result, should be |->, i.e. 1 in H basis
+        # measure result, should be |->|+>, i.e. 1 0 in H basis
         [qb.H() for qb in result]
         print("Result: ", result[0].measure(), result[1].measure())
 
