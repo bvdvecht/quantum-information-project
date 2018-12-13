@@ -1,41 +1,6 @@
 from SimulaQron.cqc.pythonLib.cqc import CQCConnection, qubit
 
-def recv_D_Plus(bob, m):
-    Rprime = []
-    for i in range(m):
-        print("bob recv_D_Plus: receive qubit")
-        Rprime.append(bob.recvQubit())
-        print("bob recv_D_Plus: qubit received")
-
-    return Rprime
-
-def teleport_proc(bob, m, R, Rprime):
-    [ Rprime[i].cnot(R[i]) for i in range(m) ]
-    return [ qb.measure(inplace=False) for qb in R ]
-
-
-def protocol2_recv(bob, m, p, l, R):
-
-    subR = R[p*m:(p+1)*m]
-
-    for i in range(l):
-        Rprime = recv_D_Plus(bob, m)
-        measurements = teleport_proc(bob, m, subR, Rprime)
-        for j in range(m):
-            print("bob: send measurement")
-            bob.sendClassical("Alice", measurements[j], close_after=True)
-            print("bob: measurement sent")
-
-        subR, Rprime = Rprime, subR
-
-        print("Bob iteration", i, "done")
-
-    tempR = R[0:p*m]
-    tempR.extend(subR)
-    tempR.extend(R[(p+1)*m:-1])
-    R = tempR
-
-    [qb.release for qb in Rprime]
+from bqc.prot2 import protocol2_recv, recv_D_Plus
 
 
 def main():
@@ -48,12 +13,6 @@ def main():
 
         R = []
 
-        # receive initial psi from Alice
-        for i in range(N):
-            print("bob: receiving psi qubit")
-            R.append(bob.recvQubit())
-            print("bob: psi qubit received")
-
         # receive J from Alice
         print("Bob: receive J")
         J = int.from_bytes(bob.recvClassical(close_after=True, timout=10), byteorder='big')
@@ -64,11 +23,10 @@ def main():
 
 
 
-        for j in range(1, J):
+        for j in range(2, J+1):
 
             #if j is odd, apply CZ
-            if not((j+1)%2 == 0):
-
+            if (j % 2) != 0:
                 [R[i].cphase(R[i+1]) for i in range(N-1)]
 
             #Bob applies H
@@ -82,7 +40,7 @@ def main():
                 flag = bob.recvClassical(close_after=True, timout=10)
 
                 #Engage protocol 2
-                protocol2_recv(bob, M, p, L, R)
+                R = protocol2_recv(bob, M, p, L, R)
 
 
             print("Bob depth", j, "done")

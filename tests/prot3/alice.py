@@ -3,50 +3,8 @@ import time
 import copy
 from SimulaQron.cqc.pythonLib.cqc import CQCConnection, qubit
 
-from gates import PrimitiveGate, CompositeGate, TensorGate, EntangleGate
-
-class CustomGate(PrimitiveGate):
-    def applyOn(self, qubits):
-        qubits[0].rot_Z(64) # pi/4 rad
-
-    def applyAdjointOn(self, qubits):
-        qubits[0].rot_Z(64) # -pi/4 rad
-
-
-# key and key_prev are Z_l and Z_{l-1} 
-def send_D_Plus(alice, m, D, key, key_prev):
-    alice.release_all_qubits()
-    
-    # create |+>^tensor(m)
-    qubits = [qubit(alice) for i in range(m)]
-    [ qb.H() for qb in qubits ]
-    
-    D.applyOn(qubits)
-    
-    # create encryption gates
-    Z_prev = TensorGate(['Z' if bool(r) else 'I' for r in key_prev])
-    Z = TensorGate(['Z' if bool(r) else 'I' for r in key])
-
-    Z_prev.applyOn(qubits)
-    Z.applyOn(qubits)
-
-    
-    for qb in qubits:
-        print('alice send_D_Plus: send qbit')
-        alice.sendQubit(qb, "Bob")
-        print('alice send_D_Plus: qbit sent')
-
-def createNextGate(m, D, measurements):
-    # create tensor of X's (if meas=1) and I's (if meas=0)
-    X = TensorGate(['X' if m else 'I' for m in measurements])
-    D_dagger = copy.copy(D)
-    D_dagger.adjoint = True
-
-    # construct D_{l+1} = X_lD_lX_lD_dagger_l
-    newD = CompositeGate([X, D, X, D_dagger])
-
-    return newD
-
+from bqc.gates import PrimitiveGate, CompositeGate, TensorGate, EntangleGate
+from bqc.prot2 import protocol2, send_D_Plus
 
 def compute_target_gate(j, p, N, M, X_record, Z_record, D):
 
@@ -103,63 +61,6 @@ def compute_target_gate(j, p, N, M, X_record, Z_record, D):
     return(targetD)
 
 
-
-
-
-def protocol2(alice, m, l, D):
-
-    cumul_meas = [ 0 for i in range(m) ]
-
-    key = [ 0 for i in range(m) ]
-
-    # protocol 2
-    for i in range(l):
-        key_prev = key
-        # generate new random key
-        key = [ randint(0, 1) for j in range(m) ]
-
-        send_D_Plus(alice, m, D, key, key_prev)
-
-        measurements = []
-        for j in range(m):
-            print("alice: receive measurement")
-            meas = alice.recvClassical(close_after=True, timout=10)
-            print('meas', int.from_bytes(meas, byteorder='big'))
-            measurements.append(int.from_bytes(meas, byteorder='big'))
-            print("alice: measurement received")
-
-        # XOR measurements to cumul_meas for step
-        cumul_meas = [(cumul_meas[k] + measurements[k])%2 for k in range(m)]
-
-        # sleep since we don't use recvClassical atm which would block
-        # time.sleep(5)
-
-        D = createNextGate(m, D, measurements)
-
-    
-    '''result = []
-    for i in range(m):
-        result.append(alice.recvQubit())
-
-    # result = ZXD|psi>
-
-    # undo Z
-    print('undoing Z:', key)
-    for i in range(m):
-        if key[i] == 1: # Z = Z_l = last key
-            result[i].Z()
-
-    # undo X
-    print('undoing X:', cumul_meas)
-    for i in range(m):
-        if cumul_meas[i] == 1:
-            result[i].X()'''
-
-    return(cumul_meas, key)
-
-
-
-
 def main():
     with CQCConnection("Alice") as alice:  
 
@@ -176,16 +77,6 @@ def main():
 
         # sum of measurement results from Bob
         cumul_meas = [ 0 for i in range(N) ]
-
-        # psi = |+>^tensor(m)
-        psi = [ qubit(alice) for i in range(N) ]
-        [ qb.H() for qb in psi ]
-
-        # send psi to Bob
-        for qb in psi:
-            print('alice: send psi qubit')
-            alice.sendQubit(qb, "Bob")
-            print('alice: psi qubit sent')
 
         # Send J to Bob
         alice.sendClassical("Bob", J, close_after=True)
@@ -223,14 +114,15 @@ def main():
         # j =2,...,J #
         #------------#
 
-        for j in range(1,J):
+        for j in range(2,J+1):
 
             new_Xline = []
             new_Zline = []
 
             for p in range(P):
 
-                targetD = compute_target_gate(j, p, M, N, X_record, Z_record, D_gates[j][p])
+                targetD = compute_target_gate(j-1, p, M, N, X_record, Z_record, D_gates[j-1][p])
+                # targetD = D
 
 
                 #Send flag to Bob when ready
@@ -263,17 +155,6 @@ def main():
         O = [(measurements[i] + Z_record[-1][i])%2 for i in range(N)]
 
         print(O)
-
-
-        '''# undo X
-        print('undoing X:', cumul_meas)
-        for i in range(m):
-            if cumul_meas[i] == 1:
-                result[i].X()
-
-        # measure result, should be |->|+>, i.e. 1 0 in H basis
-        [qb.H() for qb in result]
-        print("Result: ", result[0].measure(), result[1].measure())'''
 
 
 main()
