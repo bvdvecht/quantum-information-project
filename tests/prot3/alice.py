@@ -83,10 +83,10 @@ def main():
 
 
         # Definition of the target gates for all j and all p (J rows, P columns), except the first row which must be a tensor(N) gate
-        D_gates = [[TensorGate(['Z', 'I'])],\
+        D_gates = [ [TensorGate(['Z', 'I'])],\
+                    [TensorGate(['Z', 'I'])],\
                     [TensorGate(['I', 'I'])],\
-                    [TensorGate(['I', 'I'])],\
-                    [TensorGate(['I', 'I'])]]
+                    [TensorGate(['I', 'I'])] ]
 
 
 
@@ -153,6 +153,13 @@ def main():
 
         #Alice computes the output bits
         O = [(measurements[i] + Z_record[-1][i])%2 for i in range(N)]
+
+
+        # output should correspond to a measurement of
+        # H(D_2HD_1)|+> in the standard basis
+        # i.e. if D_1 = (Z tensor I), D_2 = (Z tensor I)
+        # then the first bit should be the outcome of measuring
+        # HZHZ|+> in the std basis, i.e. 0 or 1 each with prob 0.5
 
         print(O)
 
