@@ -40,7 +40,15 @@ def createNextGate(m, D, measurements):
     return newD
 
 
-def protocol2(alice, m, l, D):
+def generate_key(m, no_encrypt):
+    if no_encrypt:
+        return [ 0 for i in range(m) ]
+    else:
+        return [ randint(0, 1) for i in range(m) ]
+
+
+# set no_encrypt=True to have easier test case (all keys are 0)
+def protocol2(alice, m, l, D, no_encrypt=False):
 
     cumul_meas = [ 0 for i in range(m) ]
 
@@ -50,7 +58,7 @@ def protocol2(alice, m, l, D):
     for i in range(l):
         key_prev = key
         # generate new random key
-        key = [ randint(0, 1) for j in range(m) ]
+        key = generate_key(m, no_encrypt)
 
         send_D_Plus(alice, m, D, key, key_prev)
 
@@ -70,7 +78,7 @@ def protocol2(alice, m, l, D):
 
         D = createNextGate(m, D, measurements)
 
-    return(cumul_meas, key)
+    return cumul_meas, key
 
 
 
