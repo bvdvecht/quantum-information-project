@@ -4,6 +4,8 @@ import copy
 from SimulaQron.cqc.pythonLib.cqc import CQCConnection, qubit
 from bqc.gates import PrimitiveGate, CompositeGate, TensorGate, EntangleGate
 
+import logging
+
 # key and key_prev are Z_l and Z_{l-1} 
 def send_D_Plus(alice, m, D, key, key_prev):
     alice.release_all_qubits()
@@ -56,12 +58,16 @@ def protocol2(alice, m, l, D, no_encrypt=False):
 
     # protocol 2
     for i in range(l):
+
+        logging.warning("     Alice step "+str(i))
+
         key_prev = key
         # generate new random key
         key = generate_key(m, no_encrypt)
 
         send_D_Plus(alice, m, D, key, key_prev)
 
+        logging.warning("     Alice waiting measurements")
         measurements = []
         for j in range(m):
             print("alice: receive measurement")
@@ -75,7 +81,7 @@ def protocol2(alice, m, l, D, no_encrypt=False):
 
         # sleep since we don't use recvClassical atm which would block
         # time.sleep(5)
-
+        logging.warning("     Alice creating next gate")
         D = createNextGate(m, D, measurements)
 
     return cumul_meas, key
