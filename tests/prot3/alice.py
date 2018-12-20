@@ -24,6 +24,10 @@ def main():
                     [TensorGate(['I', 'Z'])],\
                     [TensorGate(['I', 'Z'])] ] # should give 11 as result
 
+        '''D_gates = [ [TensorGate(['Z', 'I'])],\
+                    [TensorGate(['I']), TensorGate(['Z'])],\
+                    [TensorGate(['I']), TensorGate(['Z'])] ] # should give 11 as result'''
+
         #The final gate is (D4 H D3 H D2 H D1 H)
 
         result = protocol3(alice, J, N, M, P, L, D_gates, no_encrypt=False)
