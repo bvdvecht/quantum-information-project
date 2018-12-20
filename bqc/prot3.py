@@ -1,6 +1,7 @@
 from random import randint
 from bqc.gates import PrimitiveGate, CompositeGate, TensorGate, EntangleGate
 from bqc.prot2 import protocol2, send_D_Plus, protocol2_recv, recv_D_Plus
+import logging
 
 def compute_target_gate(j, p, N, M, X_record, Z_record, D):
 
@@ -105,6 +106,8 @@ def protocol3(alice, J, N, M, P, L, D_gates, no_encrypt=False):
 
     for j in range(1, J):
 
+        logging.warning("Initiating depth "+str(j))
+
         new_Xline = []
         new_Zline = []
 
@@ -130,6 +133,7 @@ def protocol3(alice, J, N, M, P, L, D_gates, no_encrypt=False):
 
         X_record.append(new_Xline)
         Z_record.append(new_Zline)
+        logging.warning("End of depth "+str(j))
 
 
     result = []
