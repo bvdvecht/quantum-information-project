@@ -26,8 +26,8 @@ def main():
 
         #The final gate is (D4 H D3 H D2 H D1 H)
 
-        #result = protocol3(alice, J, N, M, P, L, D_gates, no_encrypt=True)
-        result = protocol3_v2(alice, J, M, M, 1, L, D_gates, no_encrypt=False)
+        result = protocol3(alice, J, N, M, P, L, D_gates, no_encrypt=False)
+        #result = protocol3_v2(alice, J, M, M, 1, L, D_gates, no_encrypt=False)
 
         print("Alice: output bits: ", result)
 

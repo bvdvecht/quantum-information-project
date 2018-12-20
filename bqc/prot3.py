@@ -1,7 +1,6 @@
 from random import randint
 from bqc.gates import PrimitiveGate, CompositeGate, TensorGate, EntangleGate
 from bqc.prot2 import protocol2, send_D_Plus, protocol2_recv, recv_D_Plus
-import logging
 
 def compute_target_gate(j, p, N, M, X_record, Z_record, D):
 
@@ -106,8 +105,6 @@ def protocol3(alice, J, N, M, P, L, D_gates, no_encrypt=False):
 
     for j in range(1, J):
 
-        logging.warning("Initiating depth "+str(j))
-
         new_Xline = []
         new_Zline = []
 
@@ -133,12 +130,11 @@ def protocol3(alice, J, N, M, P, L, D_gates, no_encrypt=False):
 
         X_record.append(new_Xline)
         Z_record.append(new_Zline)
-        logging.warning("End of depth "+str(j))
 
 
     result = []
     #Receiving Bob's measurements in the X basis
-    '''measurements = []
+    measurements = []
     for i in range(N):
         print("alice: receive measurement")
         meas = alice.recvClassical(close_after=True, timout=10)
@@ -148,10 +144,10 @@ def protocol3(alice, J, N, M, P, L, D_gates, no_encrypt=False):
 
 
     #Alice computes the output bits
-    result = [(measurements[i] + Z_record[-1][i])%2 for i in range(N)]'''
+    result = [(measurements[i] + Z_record[-1][i])%2 for i in range(N)]
 
 
-    finalQubits = []
+    '''finalQubits = []
     for i in range(N):
             finalQubits.append(alice.recvQubit())
 
@@ -170,7 +166,7 @@ def protocol3(alice, J, N, M, P, L, D_gates, no_encrypt=False):
                     finalQubits[i].X()
 
     finalMeasurement = [qb.measure() for qb in finalQubits]
-    print("Final measurement after decryption:", finalMeasurement)
+    print("Final measurement after decryption:", finalMeasurement)'''
 
     return result
 
@@ -207,14 +203,14 @@ def protocol3_recv(bob, J, N, M, P, L, R):
 
 
     #Bob measures in X basis
-    '''for qb in R:
-        qb.H()
-        meas = qb.measure(inplace=True)
-        qb.H()
-        bob.sendClassical("Alice", meas, close_after=True)'''
-
-
     for qb in R:
+        qb.H()
+        meas = qb.measure()
+        #qb.H()
+        bob.sendClassical("Alice", meas, close_after=True)
+
+
+    '''for qb in R:
         print('Bob R: send qbit')
         bob.sendQubit(qb, "Alice")
-        print('Bob R: qbit sent')
+        print('Bob R: qbit sent')'''
