@@ -3,6 +3,9 @@ import time
 import copy
 from SimulaQron.cqc.pythonLib.cqc import CQCConnection, qubit
 from bqc.gates import PrimitiveGate, CompositeGate, TensorGate, EntangleGate
+from bqc.byproducts import Byproduct, XRecord, ZRecord
+
+import logging
 
 # key and key_prev are Z_l and Z_{l-1} 
 def send_D_Plus(alice, m, D, key, key_prev):
@@ -49,19 +52,23 @@ def generate_key(m, no_encrypt):
 
 # set no_encrypt=True to have easier test case (all keys are 0)
 def protocol2(alice, m, l, D, no_encrypt=False):
-
+    print('alice prot2: L =', l)
     cumul_meas = [ 0 for i in range(m) ]
 
     key = [ 0 for i in range(m) ]
 
     # protocol 2
     for i in range(l):
+
+        logging.warning("     Alice step "+str(i))
+
         key_prev = key
         # generate new random key
         key = generate_key(m, no_encrypt)
 
         send_D_Plus(alice, m, D, key, key_prev)
 
+        logging.warning("     Alice waiting measurements")
         measurements = []
         for j in range(m):
             print("alice: receive measurement")
@@ -75,8 +82,9 @@ def protocol2(alice, m, l, D, no_encrypt=False):
 
         # sleep since we don't use recvClassical atm which would block
         # time.sleep(5)
-
+        logging.warning("     Alice creating next gate")
         D = createNextGate(m, D, measurements)
+        print('alice prot2 iteration', i, 'done')
 
     return cumul_meas, key
 
@@ -97,8 +105,8 @@ def teleport_proc(bob, m, R, Rprime):
 
 
 def protocol2_recv(bob, m, p, l, R):
-
-    subR = R[p*m:(p+1)*m]
+    print('bob prot2: L =', l)
+    subR = R[(p-1) * m : p * m]
 
     for i in range(l):
         Rprime = recv_D_Plus(bob, m)
@@ -110,11 +118,11 @@ def protocol2_recv(bob, m, p, l, R):
 
         subR, Rprime = Rprime, subR
 
-        print("Bob iteration", i, "done")
+        print("Bob prot2 iteration", i, "done")
 
-    tempR = R[0:p*m]
+    tempR = R[0 : (p-1) * m]
     tempR.extend(subR)
-    tempR.extend(R[(p+1)*m:-1])
+    tempR.extend(R[p * m :])
     R = tempR
     
     [qb.release for qb in Rprime]

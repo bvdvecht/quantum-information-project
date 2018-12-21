@@ -10,7 +10,7 @@ class TensorGate(PrimitiveGate):
     def __init__(self, gates):
         assert isinstance(gates, list), 'Gates should be provided in a list'
         for gate in gates:
-            assert gate in ['X', 'Y', 'Z', 'H', 'I'], 'gate not supported: ' + gate
+            assert gate in ['X', 'Y', 'Z', 'H', 'I'], 'gate not supported: ' + str(gate)
         self.dim = len(gates)
         self.gates = gates
 

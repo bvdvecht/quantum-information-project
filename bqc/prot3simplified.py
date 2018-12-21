@@ -2,70 +2,42 @@ from random import randint
 from bqc.gates import PrimitiveGate, CompositeGate, TensorGate, EntangleGate
 from bqc.prot2 import protocol2, send_D_Plus, protocol2_recv, recv_D_Plus
 
+import logging
+
 def compute_target_gate(j, p, N, M, X_record, Z_record, D):
 
     print('X_record:', X_record)
     print('Z_record:', Z_record)
 
-    chi = []
-    zeta = []
+    zoffset = 3
+    xoffset = 2
 
     #The list is padded with two null rows at the beginning, and zeros at the left and right borders
-    padded_X_record = [[0 for i in range(M+2)], [0 for i in range(M+2)]]
+    padded_X_record = [[0 for i in range(M)], [0 for i in range(M)]]
     for x in X_record:
-        line = [0]
-        line.extend(x)
-        line.append(0)
-        padded_X_record.append(line)
+        padded_X_record.append(x)
 
     #The list is padded with three null rows at the beginning, and zeros at the left and right borders
-    padded_Z_record = [[0 for i in range(M+2)], [0 for i in range(M+2)], [0 for i in range(M+2)]]
+    padded_Z_record = [[0 for i in range(M)], [0 for i in range(M)], [0 for i in range(M)]]
     for z in Z_record:
-        line = [0]
-        line.extend(z)
-        line.append(0)
-        padded_Z_record.append(line)
+        padded_Z_record.append(z)
 
 
 
-    #if j even
-    if (j + 1) % 2 == 0:
-        
-        #chi(j,k) = z(j-1, k)
-        chi = [padded_Z_record[j+2][i+1] for i in range(p*N, (p+1)*N)]
+    #f_j(D) = HZ(j-1)HDZ(j-2)HX(j-1)Z(j-1)H
+    H = TensorGate(['H' for i in range(M)])
+    Z1 = TensorGate(['Z' if z==1 else 'I' for z in padded_Z_record[j-1+zoffset]])
+    Z2 = TensorGate(['Z' if z==1 else 'I' for z in padded_Z_record[j-2+zoffset]])
+    X1 = TensorGate(['X' if x==1 else 'I' for x in padded_X_record[j-1+xoffset]])
+    targetD = CompositeGate([H,Z1,H,D,Z2,H,X1,Z1,H])
 
-        #zeta(j,k) = z(j-2, k) + x(j1, k) + sum_{-1,1}(z(j-3, k+i) + x(j-2, k+i))
-        zeta = [ (padded_Z_record[j+1][i+1] + padded_X_record[j+1][i+1] \
-         + padded_Z_record[j][i] + padded_X_record[j][i] + padded_Z_record[j][i+2] + padded_X_record[j][i+2]) %2 \
-         for i in range(p*N, (p+1)*N)]
-
-
-    #if j odd
-    else:
-
-        #chi(j,k) = z(j-1, k) + sum_{-1,1}(z(j-2, k+i) + x(j-1, k+i))
-        chi = [(padded_Z_record[j+2][i+1] \
-            + padded_Z_record[j+1][i] + padded_X_record[j+1][i] + padded_Z_record[j+1][i+2] + padded_X_record[j+1][i+2]) %2 \
-            for i in range(p*N, (p+1)*N)]
-
-        #zeta(j,k) = z(j-2,k) + x(j-1,k)
-        zeta = [(padded_Z_record[j+1][i+1] + padded_X_record[j+1][i+1]) %2 for i in range(p*N, (p+1)*N)]
-
-
-    #f_jp(D) = tensor(X^chi)D tensor(Z^zeta X^chi)
-    X = TensorGate(['X' if x==1 else 'I' for x in chi])
-    Z = TensorGate(['Z' if z==1 else 'I' for z in zeta])
-    targetD = CompositeGate([X, D, Z, X])
-
-    print('chi:', chi)
-    print('zeta:', zeta)
     print('targetD', targetD)
     
     return(targetD)
 
 
 # set no_encrypt=True to have easier test case (all keys are 0)
-def protocol3(alice, J, N, M, P, L, D_gates, no_encrypt=False):
+def protocol3_v2(alice, J, N, M, P, L, D_gates, no_encrypt=False):
     #Recording of the zj and xj, i.e. exponents of the Z and X gates applied in the correction step
     X_record = []
     Z_record = []
@@ -118,7 +90,9 @@ def protocol3(alice, J, N, M, P, L, D_gates, no_encrypt=False):
             #alice.sendClassical("Bob", 1, close_after=True)
 
             #Alice engages protocol 2 and saves the teleportation byproducts and her key
+            logging.warning("Initiating prot2 depth "+str(j))
             Xjp, Zjp = protocol2(alice, M, L, targetD, no_encrypt)
+            logging.warning("Ended prot2 depth "+str(j))
             print('prot2 returned:')
             print('\tX:', Xjp)
             print('\tZ:', Zjp)
@@ -171,7 +145,7 @@ def protocol3(alice, J, N, M, P, L, D_gates, no_encrypt=False):
     return result
 
 
-def protocol3_recv(bob, J, N, M, P, L, R):
+def protocol3_recv_v2(bob, J, N, M, P, L, R):
     #Receives J=1 step qubits
     R = recv_D_Plus(bob, N)
 
@@ -180,10 +154,6 @@ def protocol3_recv(bob, J, N, M, P, L, R):
     ###########
 
     for j in range(2, J+1):
-
-        #if j is odd, apply CZ
-        if (j % 2) != 0:
-            [R[i].cphase(R[i + 1]) for i in range(N - 1)]
 
         #Bob applies H
         [R[i].H() for i in range(N)]
