@@ -4,22 +4,27 @@ from bqc.prot2 import protocol2, send_D_Plus, protocol2_recv, recv_D_Plus
 
 def compute_target_gate(j, p, N, M, X_record, Z_record, D):
 
+    # M total qubits
+    # N subqubits
+
     print('X_record:', X_record)
     print('Z_record:', Z_record)
+
+    offset = 3
+    #The list is padded with two null rows at the beginning, and zeros at the left and right borders
+    padded_X_record = [[0 for i in range(M+2)] for j in range(offset)]
+    padded_Z_record = [[0 for i in range(M+2)] for j in range(offset)]
+
 
     chi = []
     zeta = []
 
-    #The list is padded with two null rows at the beginning, and zeros at the left and right borders
-    padded_X_record = [[0 for i in range(M+2)], [0 for i in range(M+2)]]
     for x in X_record:
         line = [0]
         line.extend(x)
         line.append(0)
         padded_X_record.append(line)
 
-    #The list is padded with three null rows at the beginning, and zeros at the left and right borders
-    padded_Z_record = [[0 for i in range(M+2)], [0 for i in range(M+2)], [0 for i in range(M+2)]]
     for z in Z_record:
         line = [0]
         line.extend(z)
@@ -27,34 +32,28 @@ def compute_target_gate(j, p, N, M, X_record, Z_record, D):
         padded_Z_record.append(line)
 
 
+    #if j even (true j = j+1)
+    if j%2 != 0:
 
-    #if j even
-    if (j + 1) % 2 == 0:
-        
-        #chi(j,k) = z(j-1, k)
-        chi = [padded_Z_record[j+2][i+1] for i in range(p*N, (p+1)*N)]
+        chi = [padded_Z_record[j-1+offset][k+1] for k in range(p*N, (p+1)*N)]
 
-        #zeta(j,k) = z(j-2, k) + x(j1, k) + sum_{-1,1}(z(j-3, k+i) + x(j-2, k+i))
-        zeta = [ (padded_Z_record[j+1][i+1] + padded_X_record[j+1][i+1] \
-         + padded_Z_record[j][i] + padded_X_record[j][i] + padded_Z_record[j][i+2] + padded_X_record[j][i+2]) %2 \
-         for i in range(p*N, (p+1)*N)]
+        zeta = [ (padded_Z_record[j-2+offset][k+1] + padded_X_record[j-1+offset][k+1] \
+         + padded_Z_record[j-3+offset][k] + padded_X_record[j-2+offset][k] + padded_Z_record[j-3+offset][k+2] + padded_X_record[j-2+offset][k+2]) %2 \
+         for k in range(p*N, (p+1)*N)]
 
-
-    #if j odd
     else:
-
+            
         #chi(j,k) = z(j-1, k) + sum_{-1,1}(z(j-2, k+i) + x(j-1, k+i))
-        chi = [(padded_Z_record[j+2][i+1] \
-            + padded_Z_record[j+1][i] + padded_X_record[j+1][i] + padded_Z_record[j+1][i+2] + padded_X_record[j+1][i+2]) %2 \
-            for i in range(p*N, (p+1)*N)]
+        chi = [(padded_Z_record[j-1+offset][k+1] \
+            + padded_Z_record[j-2+offset][k] + padded_X_record[j-1+offset][k] + padded_Z_record[j-2+offset][k+2] + padded_X_record[j-1+offset][k+2]) %2 \
+            for k in range(p*N, (p+1)*N)]
 
         #zeta(j,k) = z(j-2,k) + x(j-1,k)
-        zeta = [(padded_Z_record[j+1][i+1] + padded_X_record[j+1][i+1]) %2 for i in range(p*N, (p+1)*N)]
+        zeta = [(padded_Z_record[j-2+offset][k+1] + padded_X_record[j-1+offset][k+1]) %2 for k in range(p*N, (p+1)*N)]
 
 
-    #f_jp(D) = tensor(X^chi)D tensor(Z^zeta X^chi)
-    X = TensorGate(['X' if x==1 else 'I' for x in chi])
-    Z = TensorGate(['Z' if z==1 else 'I' for z in zeta])
+    X = TensorGate(['X' if bool(x) else 'I' for x in chi])
+    Z = TensorGate(['Z' if bool(z) else 'I' for z in zeta])
     targetD = CompositeGate([X, D, Z, X])
 
     print('chi:', chi)
@@ -111,11 +110,6 @@ def protocol3(alice, J, N, M, P, L, D_gates, no_encrypt=False):
         for p in range(P):
 
             targetD = compute_target_gate(j, p, M, N, X_record, Z_record, D_gates[j][p])
-            # targetD = D
-
-
-            #Send flag to Bob when ready
-            #alice.sendClassical("Bob", 1, close_after=True)
 
             #Alice engages protocol 2 and saves the teleportation byproducts and her key
             Xjp, Zjp = protocol2(alice, M, L, targetD, no_encrypt)
@@ -134,7 +128,7 @@ def protocol3(alice, J, N, M, P, L, D_gates, no_encrypt=False):
 
     result = []
     #Receiving Bob's measurements in the X basis
-    '''measurements = []
+    measurements = []
     for i in range(N):
         print("alice: receive measurement")
         meas = alice.recvClassical(close_after=True, timout=10)
@@ -144,10 +138,12 @@ def protocol3(alice, J, N, M, P, L, D_gates, no_encrypt=False):
 
 
     #Alice computes the output bits
-    result = [(measurements[i] + Z_record[-1][i])%2 for i in range(N)]'''
+    print("Z key:", Z_record[-1])
+    print("X key:", X_record[-1])
+    result = [(measurements[i] + Z_record[-1][i])%2 for i in range(N)]
 
 
-    finalQubits = []
+    '''finalQubits = []
     for i in range(N):
             finalQubits.append(alice.recvQubit())
 
@@ -166,7 +162,7 @@ def protocol3(alice, J, N, M, P, L, D_gates, no_encrypt=False):
                     finalQubits[i].X()
 
     finalMeasurement = [qb.measure() for qb in finalQubits]
-    print("Final measurement after decryption:", finalMeasurement)
+    print("Final measurement after decryption:", finalMeasurement)'''
 
     return result
 
@@ -191,10 +187,6 @@ def protocol3_recv(bob, J, N, M, P, L, R):
 
         for p in range(P):
 
-            #Wait for alice to be ready and avoid timeout
-            #print("Bob: waiting for alice for p =", p)
-            #flag = bob.recvClassical(close_after=True, timout=10)
-
             #Engage protocol 2
             R = protocol2_recv(bob, M, p, L, R)
 
@@ -203,14 +195,14 @@ def protocol3_recv(bob, J, N, M, P, L, R):
 
 
     #Bob measures in X basis
-    '''for qb in R:
-        qb.H()
-        meas = qb.measure(inplace=True)
-        qb.H()
-        bob.sendClassical("Alice", meas, close_after=True)'''
-
-
     for qb in R:
+        qb.H()
+        meas = qb.measure()
+        #qb.H()
+        bob.sendClassical("Alice", meas, close_after=True)
+
+
+    '''for qb in R:
         print('Bob R: send qbit')
         bob.sendQubit(qb, "Alice")
-        print('Bob R: qbit sent')
+        print('Bob R: qbit sent')'''

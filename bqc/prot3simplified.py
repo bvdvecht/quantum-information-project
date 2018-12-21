@@ -2,33 +2,26 @@ from random import randint
 from bqc.gates import PrimitiveGate, CompositeGate, TensorGate, EntangleGate
 from bqc.prot2 import protocol2, send_D_Plus, protocol2_recv, recv_D_Plus
 
-import logging
-
 def compute_target_gate(j, p, N, M, X_record, Z_record, D):
 
     print('X_record:', X_record)
     print('Z_record:', Z_record)
 
-    zoffset = 3
-    xoffset = 2
+    offset = 2
 
-    #The list is padded with two null rows at the beginning, and zeros at the left and right borders
-    padded_X_record = [[0 for i in range(M)], [0 for i in range(M)]]
-    for x in X_record:
-        padded_X_record.append(x)
+    padded_X_record = [ [0 for i in range(M)] for j in range(offset) ]
+    padded_Z_record = [ [0 for i in range(M)] for j in range(offset) ]
 
-    #The list is padded with three null rows at the beginning, and zeros at the left and right borders
-    padded_Z_record = [[0 for i in range(M)], [0 for i in range(M)], [0 for i in range(M)]]
-    for z in Z_record:
-        padded_Z_record.append(z)
+    padded_X_record.extend(X_record)
+    padded_Z_record.extend(Z_record)
 
 
 
     #f_j(D) = HZ(j-1)HDZ(j-2)HX(j-1)Z(j-1)H
     H = TensorGate(['H' for i in range(M)])
-    Z1 = TensorGate(['Z' if z==1 else 'I' for z in padded_Z_record[j-1+zoffset]])
-    Z2 = TensorGate(['Z' if z==1 else 'I' for z in padded_Z_record[j-2+zoffset]])
-    X1 = TensorGate(['X' if x==1 else 'I' for x in padded_X_record[j-1+xoffset]])
+    Z1 = TensorGate(['Z' if bool(z) else 'I' for z in padded_Z_record[j-1+offset]])
+    Z2 = TensorGate(['Z' if bool(z) else 'I' for z in padded_Z_record[j-2+offset]])
+    X1 = TensorGate(['X' if bool(x) else 'I' for x in padded_X_record[j-1+offset]])
     targetD = CompositeGate([H,Z1,H,D,Z2,H,X1,Z1,H])
 
     print('targetD', targetD)
@@ -83,16 +76,9 @@ def protocol3_v2(alice, J, N, M, P, L, D_gates, no_encrypt=False):
         for p in range(P):
 
             targetD = compute_target_gate(j, p, M, N, X_record, Z_record, D_gates[j][p])
-            # targetD = D
-
-
-            #Send flag to Bob when ready
-            #alice.sendClassical("Bob", 1, close_after=True)
 
             #Alice engages protocol 2 and saves the teleportation byproducts and her key
-            logging.warning("Initiating prot2 depth "+str(j))
             Xjp, Zjp = protocol2(alice, M, L, targetD, no_encrypt)
-            logging.warning("Ended prot2 depth "+str(j))
             print('prot2 returned:')
             print('\tX:', Xjp)
             print('\tZ:', Zjp)
@@ -108,7 +94,7 @@ def protocol3_v2(alice, J, N, M, P, L, D_gates, no_encrypt=False):
 
     result = []
     #Receiving Bob's measurements in the X basis
-    '''measurements = []
+    measurements = []
     for i in range(N):
         print("alice: receive measurement")
         meas = alice.recvClassical(close_after=True, timout=10)
@@ -118,10 +104,12 @@ def protocol3_v2(alice, J, N, M, P, L, D_gates, no_encrypt=False):
 
 
     #Alice computes the output bits
-    result = [(measurements[i] + Z_record[-1][i])%2 for i in range(N)]'''
+    print("Z key:", Z_record[-1])
+    print("X key:", X_record[-1])
+    result = [(measurements[i] + Z_record[-1][i])%2 for i in range(N)]
 
 
-    finalQubits = []
+    '''finalQubits = []
     for i in range(N):
             finalQubits.append(alice.recvQubit())
 
@@ -140,7 +128,7 @@ def protocol3_v2(alice, J, N, M, P, L, D_gates, no_encrypt=False):
                     finalQubits[i].X()
 
     finalMeasurement = [qb.measure() for qb in finalQubits]
-    print("Final measurement after decryption:", finalMeasurement)
+    print("Final measurement after decryption:", finalMeasurement)'''
 
     return result
 
@@ -161,10 +149,6 @@ def protocol3_recv_v2(bob, J, N, M, P, L, R):
 
         for p in range(P):
 
-            #Wait for alice to be ready and avoid timeout
-            #print("Bob: waiting for alice for p =", p)
-            #flag = bob.recvClassical(close_after=True, timout=10)
-
             #Engage protocol 2
             R = protocol2_recv(bob, M, p, L, R)
 
@@ -173,14 +157,14 @@ def protocol3_recv_v2(bob, J, N, M, P, L, R):
 
 
     #Bob measures in X basis
-    '''for qb in R:
-        qb.H()
-        meas = qb.measure(inplace=True)
-        qb.H()
-        bob.sendClassical("Alice", meas, close_after=True)'''
-
-
     for qb in R:
+        qb.H()
+        meas = qb.measure()
+        #qb.H()
+        bob.sendClassical("Alice", meas, close_after=True)
+
+
+    '''for qb in R:
         print('Bob R: send qbit')
         bob.sendQubit(qb, "Alice")
-        print('Bob R: qbit sent')
+        print('Bob R: qbit sent')'''

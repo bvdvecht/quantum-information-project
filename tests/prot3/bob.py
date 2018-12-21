@@ -19,8 +19,8 @@ def main():
         J = int.from_bytes(bob.recvClassical(close_after=True, timout=10), byteorder='big')
         print('J = ',J)
 
-        #protocol3_recv(bob, J, N, M, P, L, R)
-        protocol3_recv_v2(bob, J, M, M, 1, L, R)
+        protocol3_recv(bob, J, N, M, P, L, R)
+        #protocol3_recv_v2(bob, J, M, M, 1, L, R)
 
         print("Bob done")
         

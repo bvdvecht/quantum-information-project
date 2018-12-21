@@ -9,7 +9,7 @@ from bqc.prot3simplified import protocol3_v2
 def main():
     with CQCConnection("Alice") as alice:  
 
-        J = 4 #Depth
+        J = 3 #Depth
         N = 2 #Number of qubits
         M = 2 #Number of sub-qubits : Must be a divider of N
         P = int(N/M)
@@ -22,15 +22,18 @@ def main():
 
         D_gates = [ [TensorGate(['Z', 'I'])],\
                     [TensorGate(['I', 'Z'])],\
-                    [TensorGate(['I', 'Z'])],\
-                    [TensorGate(['I', 'I'])]  ] # should give 11 as result
+                    [TensorGate(['I', 'Z'])] ] # should give 11 as result
+
+        '''D_gates = [ [TensorGate(['Z', 'I'])],\
+                    [TensorGate(['I']), TensorGate(['Z'])],\
+                    [TensorGate(['I']), TensorGate(['Z'])] ] # should give 11 as result'''
 
         #The final gate is (D4 H D3 H D2 H D1 H)
 
-        #result = protocol3(alice, J, N, M, P, L, D_gates, no_encrypt=True)
-        result = protocol3_v2(alice, J, M, M, 1, L, D_gates, no_encrypt=False)
+        result = protocol3(alice, J, N, M, P, L, D_gates, no_encrypt=False)
+        #result = protocol3_v2(alice, J, M, M, 1, L, D_gates, no_encrypt=False)
 
-        print(result)
+        print("Alice: output bits: ", result)
 
 main()
 exit()
