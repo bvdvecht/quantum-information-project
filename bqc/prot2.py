@@ -63,7 +63,8 @@ def protocol2(alice, m, l, D, no_encrypt=False):
         key_prev = key
         # generate new random key
         key = generate_key(m, no_encrypt)
-
+        
+        
         send_D_Plus(alice, m, D, key, key_prev)
 
         logging.warning("     Alice waiting measurements")

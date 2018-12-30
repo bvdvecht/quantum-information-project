@@ -2,6 +2,7 @@ from random import randint
 from bqc.gates import PrimitiveGate, CompositeGate, TensorGate, EntangleGate
 from bqc.prot2 import protocol2, send_D_Plus, protocol2_recv, recv_D_Plus
 from bqc.byproducts import Byproduct, XRecord, ZRecord
+import logging
 
 
 def compute_target_gate_simple(j, p, N, M, X_record, Z_record, D):
@@ -128,7 +129,6 @@ def protocol3(alice, J, N, L, D_gates, M, P):
             targetD = compute_target_gate(j, p, N, M, X_record, Z_record, D_gates[j-1][p-1])
 
             #Send flag to Bob when ready
-
             alice.sendClassical("Bob", 1, close_after=True)
 
             #Alice engages protocol 2 and saves the teleportation byproducts and her key
@@ -167,7 +167,7 @@ def protocol3(alice, J, N, L, D_gates, M, P):
 def protocol3_recv(bob, J, N, M, P, L, R):
     #Receives J=1 step qubits
     R = recv_D_Plus(bob, N)
-
+    
     for j in range(2, J + 1):
         if (j % 2) == 1:
             print('\n APPLYING CPHASE \n')

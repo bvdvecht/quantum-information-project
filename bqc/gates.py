@@ -53,13 +53,20 @@ class EntangleGate(PrimitiveGate):
         else:
             assert False, 'not implemented'
 
+    
+    def applyAdjointOn(self, qubits):
+        self.applyOn(qubits) # for these gates, adjoint is the same
+
+    def __str__(self):
+        return 'entangle gate, ' + str(self.type)
+
 
 
 class CompositeGate:
     def __init__(self, gates, adjoint=False):
         assert isinstance(gates, list), 'CompositeGate constructor expects a list of gates'
         for gate in gates:
-            assert isinstance(gate, PrimitiveGate) or isinstance(gate, CompositeGate)
+            assert isinstance(gate, PrimitiveGate) or isinstance(gate, CompositeGate) or isinstance(gate, EntangleGate)
         self.gates = gates
         self.adjoint = adjoint
 
