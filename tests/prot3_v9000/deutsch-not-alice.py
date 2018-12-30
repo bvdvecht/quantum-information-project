@@ -18,16 +18,16 @@ def main():
         #          <active-low CNOT>
         #
         # let Bob compute this blindly using the following circuit:
-        # 0 - . - H -|I|- H -|.|- . - H -|Z|- MEASURE in x basis
+        # 0 - . - H -|I|- H -|.|- . - H -|Z|- H - |I| - MEASURE in x basis
         #     |      | |     |||  |      | |     
-        # 0 - . - H -|Z|- H -|.|- . - H -|I|-  
+        # 0 - . - H -|Z|- H -|.|- . - H -|I|- H - |I| 
         #             D1      D2          D3  
         #         <   I X  >  <Cphase>        
         #
         # measuring the output of Bob's circuit in the X basis implicitly applies the last H
         # gates needed for the Deutsch-Jozsa algorithm
 
-        J = 3  # Depth
+        J = 4  # Depth
         N = 2  # Number of qubits
         M = 2  # Number of sub-qubits : Must be a divider of N
         P = int(N / M)
@@ -35,7 +35,8 @@ def main():
 
         D_gates = [ TensorGate(['I', 'Z']),\
                     [ EntangleGate('CPHASE') ],\
-                    [ TensorGate(['Z', 'I']) ]]
+                    [ TensorGate(['Z', 'I']) ],\
+                    [ TensorGate(['I', 'I'])] ]
 
 
         result = protocol3(alice, J=J, N=N, M=M, L=L, D_gates=D_gates, P=P)
