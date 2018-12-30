@@ -9,8 +9,8 @@ class PrimitiveGate:
 class TensorGate(PrimitiveGate):
     def __init__(self, gates):
         assert isinstance(gates, list), 'Gates should be provided in a list'
-        for gate in gates:
-            assert gate in ['X', 'Y', 'Z', 'H', 'I'], 'gate not supported: ' + str(gate)
+        #for gate in gates:
+        #    assert gate in ['X', 'Y', 'Z', 'H', 'I'], 'gate not supported: ' + str(gate)
         self.dim = len(gates)
         self.gates = gates
 
@@ -28,10 +28,25 @@ class TensorGate(PrimitiveGate):
             elif self.gates[i] == 'I':
                 qubits[i].I()
             else:
-                assert False, 'not implemented'
+                #assert False, 'not implemented'
+                self.gates[i].applyOn([qubits[i]])
 
     def applyAdjointOn(self, qubits):
-        self.applyOn(qubits) # for these gates, adjoint is the same
+        assert len(qubits) == self.dim
+        for i in range(self.dim):
+            if self.gates[i] == 'X':
+                qubits[i].X()
+            elif self.gates[i] == 'Y':
+                qubits[i].Y()
+            elif self.gates[i] == 'Z':
+                qubits[i].Z()
+            elif self.gates[i] == 'H':
+                qubits[i].H()
+            elif self.gates[i] == 'I':
+                qubits[i].I()
+            else:
+                #assert False, 'not implemented'
+                self.gates[i].applyAdjointOn([qubits[i]])
 
     def __str__(self):
         return 'tensor gate, gates:' + str(self.gates)
@@ -89,4 +104,44 @@ class CompositeGate:
         for gate in self.gates:
             s += '\t' + str(gate) + '\n'
 
+        return s
+
+
+class CustomDiagonalGate(PrimitiveGate):
+
+    # Gate of type exp(i(2*pi*n_0/256*I + 2*pi*n_1/256*Z))
+
+    # In this case, we can forget about the I gate since it will count only as a global phase on the system
+
+    # !!! WORKS ONLY FOR SINGLE-QUBIT
+
+    def __init__(self, steps, adjoint=False):
+
+        #steps[0] is phase of identity in the form steps*2*pi/256 radians
+        #steps[1] is phase of Z
+
+        assert isinstance(steps, list), 'CompositeGate constructor expects a list of diagonal '
+        assert(len(steps)==2), 'Expected two elements for the rotation steps'
+
+        for i in range(len(steps)):
+            steps[i] = (-2*steps[i])%256
+
+        self.steps = steps
+        self.adjoint = adjoint
+
+    def applyOn(self, qubits):
+        if self.adjoint:
+            self.applyAdjointOn(qubits)
+        else:
+            assert(len(qubits)==1)
+            qubits[0].rot_Z(self.steps[1])
+
+
+    def applyAdjointOn(self, qubits):
+        assert(len(qubits)==1)
+        qubits[0].rot_Z((-self.steps[1])%256)
+
+
+    def __str__(self):
+        s = '1-qubit DGate:\n'
         return s
