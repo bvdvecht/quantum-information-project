@@ -147,10 +147,8 @@ def protocol3_recv_v2(bob, J, N, M, P, L, R):
         [R[i].H() for i in range(N)]
 
 
-        for p in range(P):
-
-            #Engage protocol 2
-            R = protocol2_recv(bob, M, p, L, R)
+        #Engage protocol 2
+        R = protocol2_recv(bob, M, 1, L, R)
 
 
         print("Bob depth", j, "done")

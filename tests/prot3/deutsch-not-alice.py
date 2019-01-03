@@ -3,6 +3,7 @@ from SimulaQron.cqc.pythonLib.cqc import CQCConnection, qubit
 from bqc.gates import PrimitiveGate, CompositeGate, TensorGate, EntangleGate, CustomDiagonalGate
 from bqc.prot3_v9000 import compute_target_gate
 from bqc.prot3_v9000 import protocol3
+from bqc.prot3simplified import protocol3_v2
 
 
 def main():
@@ -30,7 +31,7 @@ def main():
         P = int(N / M)
         L = 3  # Number of steps for protocol2
 
-        D_gates = [ TensorGate([CustomDiagonalGate([0, 32]), 'Z']),\
+        D_gates = [ [TensorGate([CustomDiagonalGate([0, 32]), 'Z'])],\
                         [ TensorGate([CustomDiagonalGate([-16, 16]), 'I']) ],\
                         [ TensorGate(['Z', 'I']) ], \
                         [ TensorGate([CustomDiagonalGate([16, -16]), 'I']) ],\
@@ -39,23 +40,9 @@ def main():
                         [ TensorGate(['Z', 'I']) ],\
                         [ TensorGate(['I', 'I'])] ]
 
-        '''D_gates = [ TensorGate([CustomDiagonalGate([0, 32]), 'Z']),\
-                        [ TensorGate([CustomDiagonalGate([-16, 16]), 'I']) ],\
-                        [ TensorGate(['I', 'I']) ], \
-                        [ TensorGate(['I', 'I']) ], \
-                        [ TensorGate(['Z', 'I']) ], \
-                        [ TensorGate([CustomDiagonalGate([16, -16]), 'I']) ],\
-                        [ TensorGate(['I', 'I']) ],\
-                        [ TensorGate(['I', 'I']) ],\
-                        [ TensorGate([CustomDiagonalGate([0, -32]), 'I']) ],\
-                        [ EntangleGate('CPHASE') ],\
-                        [ TensorGate(['I', 'I']) ],\
-                        [ TensorGate(['I', 'I']) ],\
-                        [ TensorGate(['Z', 'I']) ],\
-                        [ TensorGate(['I', 'I'])] ]'''
 
 
-        result = protocol3(alice, J=J, N=N, M=M, L=L, D_gates=D_gates, P=P)
+        result = protocol3_v2(alice, J=J, N=N, M=M, L=L, D_gates=D_gates, P=P)
 
         print('\nRESULT:', result)
 
