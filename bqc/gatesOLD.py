@@ -2,34 +2,38 @@ class PrimitiveGate:
     def applyOn(self, qubit):
         pass
 
-    def applyAdjoinOn(self, qubit):
+    def applyAdjointOn(self, qubit):
         pass
 
 # gate of length n that can be written as tensor product of n single-qubit gates
 class TensorGate(PrimitiveGate):
-    def __init__(self, gates):
+    def __init__(self, gates, adjoint=False):
         assert isinstance(gates, list), 'Gates should be provided in a list'
         #for gate in gates:
         #    assert gate in ['X', 'Y', 'Z', 'H', 'I'], 'gate not supported: ' + str(gate)
         self.dim = len(gates)
         self.gates = gates
+        self.adjoint = adjoint
 
     def applyOn(self, qubits):
         assert len(qubits) == self.dim
-        for i in range(self.dim):
-            if self.gates[i] == 'X':
-                qubits[i].X()
-            elif self.gates[i] == 'Y':
-                qubits[i].Y()
-            elif self.gates[i] == 'Z':
-                qubits[i].Z()
-            elif self.gates[i] == 'H':
-                qubits[i].H()
-            elif self.gates[i] == 'I':
-                qubits[i].I()
-            else:
-                #assert False, 'not implemented'
-                self.gates[i].applyOn([qubits[i]])
+        if self.adjoint:
+            self.applyAdjointOn(qubits)
+        else:
+            for i in range(self.dim):
+                if self.gates[i] == 'X':
+                    qubits[i].X()
+                elif self.gates[i] == 'Y':
+                    qubits[i].Y()
+                elif self.gates[i] == 'Z':
+                    qubits[i].Z()
+                elif self.gates[i] == 'H':
+                    qubits[i].H()
+                elif self.gates[i] == 'I':
+                    qubits[i].I()
+                else:
+                    #assert False, 'not implemented'
+                    self.gates[i].applyOn([qubits[i]])
 
     def applyAdjointOn(self, qubits):
         assert len(qubits) == self.dim
@@ -49,7 +53,8 @@ class TensorGate(PrimitiveGate):
                 self.gates[i].applyAdjointOn([qubits[i]])
 
     def __str__(self):
-        return 'tensor gate, gates:' + str(self.gates)
+        gate_list = [ str(gate) if isinstance(gate, RotZGate) else gate for gate in self.gates ]
+        return 'tensor gate, gates:' + str(gate_list)
 
 # gate than can not be written as a tensor product
 # for now, only implements CNOT or CPHASE (2-qubit)
@@ -107,6 +112,36 @@ class CompositeGate:
         return s
 
 
+ROT_PI_2 = 64
+ROT_PI_4 = 32
+
+class RotZGate(PrimitiveGate):
+    def __init__(self, angle, adjoint=False):
+        self.angle = angle % 256
+        self.adjoint = adjoint
+
+    def applyOn(self, qubits):
+        if self.adjoint:
+            self.applyAdjointOn(qubits)
+        else:
+            assert(len(qubits) == 1)
+            #print('applying rotZ on')
+            #qubits[0].Y()
+            qubits[0].rot_Z(self.angle)
+            #print('result of rotZ:')
+            #qubits[0].Y()
+
+    def applyAdjointOn(self, qubits):
+        assert(len(qubits) == 1)
+        qubits[0].rot_Z((-self.angle)%256)
+
+    def __str__(self):
+        angle = self.angle
+        if self.adjoint:
+            angle = (- angle) % 256
+        return 'RotZ({})'.format(angle)
+
+
 class CustomDiagonalGate(PrimitiveGate):
 
     # Gate of type exp(i(2*pi*n_0/256*I + 2*pi*n_1/256*Z))
@@ -125,6 +160,7 @@ class CustomDiagonalGate(PrimitiveGate):
 
         for i in range(len(steps)):
             steps[i] = (-2*steps[i])%256
+            # print('steps[{}] = {}'.format(i, str(steps[i])))
 
         self.steps = steps
         self.adjoint = adjoint
