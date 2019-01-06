@@ -1,18 +1,20 @@
 from random import randint
-from bqc.gates import PrimitiveGate, CompositeGate, TensorGate, EntangleGate
+#from bqc.gates import PrimitiveGate, CompositeGate, TensorGate, EntangleGate
+from bqc.gates2 import CompositeGate, TensorGate
+from bqc.gates2 import SimpleGate as SG
 from bqc.prot2 import protocol2, send_D_Plus, protocol2_recv, recv_D_Plus
 from bqc.byproducts import Byproduct, XRecord, ZRecord
 import logging
 
 
 def compute_target_gate_simple(j, p, N, M, X_record, Z_record, D):
-    H = TensorGate(['H' for i in range(M)])
+    H = TensorGate([SG('H') for i in range(M)])
     # print('target gate H:', H)
 
     # X gate to undo byproduct of teleportation of previous iteration
     fixPrevXList = []
     for k in range(1, M + 1):
-        gate = 'X' if X_record.get(j - 1).get((p-1) * M + k) else 'I'
+        gate = SG('X') if X_record.get(j - 1).get((p-1) * M + k) else SG('I')
         fixPrevXList.append(gate)
     fixPrevX = TensorGate(fixPrevXList)
     # print('target gate fixPrevX:', fixPrevX)
@@ -20,7 +22,7 @@ def compute_target_gate_simple(j, p, N, M, X_record, Z_record, D):
     # Z gate to undo byproduct of teleportation of previous iteration
     fixPrevZList = []
     for k in range(1, M + 1):
-        gate = 'Z' if Z_record.get(j - 1).get((p-1) * M + k) else 'I'
+        gate = SG('Z') if Z_record.get(j - 1).get((p-1) * M + k) else SG('I')
         fixPrevZList.append(gate)
     fixPrevZ = TensorGate(fixPrevZList)
     # print('target gate fixPrevZ:', fixPrevZ)
@@ -28,7 +30,7 @@ def compute_target_gate_simple(j, p, N, M, X_record, Z_record, D):
     # Z gate to undo byproduct of teleportation of 2 iterations back
     fixPrevPrevZList = []
     for k in range(1, M + 1):
-        gate = 'Z' if Z_record.get(j - 2).get((p-1) * M + k) else 'I'
+        gate = SG('Z') if Z_record.get(j - 2).get((p-1) * M + k) else SG('I')
         fixPrevPrevZList.append(gate)
     fixPrevPrevZ = TensorGate(fixPrevPrevZList)
     # print('target gate fixPrevPrevZ:', fixPrevPrevZ)
@@ -69,17 +71,16 @@ def compute_target_gate(j, p, N, M, X_record, Z_record, D):
 
     XjkGates = []
     for k in range((p-1) * M + 1, p * M + 1):
-        XjkGates.append('X' if chi[k] else 'I')
+        XjkGates.append(SG('X') if chi[k] else SG('I'))
 
     ZjkGates = []
     for k in range((p-1) * M + 1, p * M + 1):
-        ZjkGates.append('Z' if zeta[k] else 'I')
+        ZjkGates.append(SG('Z') if zeta[k] else SG('I'))
 
     Xjk = TensorGate(XjkGates)
     Zjk = TensorGate(ZjkGates)
 
     targetD = CompositeGate([Xjk, D, Zjk, Xjk])
-    print('targetD:', targetD)        
     return targetD
 
 
@@ -98,8 +99,14 @@ def protocol3(alice, J, N, L, D_gates, M, P):
     D = D_gates[0]
 
     keyprev = [ 0 for i in range(N) ]
-    key = [ randint(0, 1) for i in range(N) ]
-    # key = [ 0 for i in range(N) ]
+    # key = [ randint(0, 1) for i in range(N) ]
+
+    #########################
+    #######################
+    #########################
+    ## !!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    #########################
+    key = [ 0 for i in range(N) ]
     
     Z_1 = Byproduct(N)
     for k in range(1, N+1):
@@ -127,13 +134,15 @@ def protocol3(alice, J, N, L, D_gates, M, P):
         for p in range(1, P + 1):
             print('p =', p)
             targetD = compute_target_gate(j, p, N, M, X_record, Z_record, D_gates[j-1][p-1])
+            print('alice iteration {} targetD:'.format(j))
+            print(targetD)
 
             #Send flag to Bob when ready
             alice.sendClassical("Bob", 1, close_after=True)
 
             #Alice engages protocol 2 and saves the teleportation byproducts and her key
-            Xj, Zj = protocol2(alice, M, L, targetD, no_encrypt=False)
-            print('prot2 returned:')
+            Xj, Zj = protocol2(alice, M, L, targetD, no_encrypt=True)
+            print('alice iteration {} of prot3: prot2 returned:'.format(j))
             print('\tX:', Xj)
             print('\tZ:', Zj)
             assert len(Xj) == M and len(Zj) == M
@@ -167,15 +176,30 @@ def protocol3(alice, J, N, L, D_gates, M, P):
 def protocol3_recv(bob, J, N, M, P, L, R):
     #Receives J=1 step qubits
     R = recv_D_Plus(bob, N)
+
+    print('Bob end of iteration 1, contents of R:')
+    R[0].Y()
+    R[1].Y()
+    print('\n\n')
     
     for j in range(2, J + 1):
+        print('\n\nBOB START ITERATION', j)
+
         if (j % 2) == 1:
-            print('\n APPLYING CPHASE \n')
+            print('APPLYING CPHASE')
             [ R[i].cphase(R[i + 1]) for i in range(N - 1) ]
+            print('Bob iteration {}, contents of R just after CZ:'.format(j))
+            R[0].Y()
+            R[1].Y()
+            print('\n\n')
 
         #Bob applies H
-        print('\n APPLYING H \n')
+        print('APPLYING H')
         [ qb.H() for qb in R ]
+        print('Bob iteration {}, contents of R just after H:'.format(j))
+        R[0].Y()
+        R[1].Y()
+        print('\n\n')
 
         for p in range(1, P + 1):
             #Wait for alice to be ready and avoid timeout
@@ -185,6 +209,10 @@ def protocol3_recv(bob, J, N, M, P, L, R):
             R = protocol2_recv(bob, M, p, L, R)
 
         print("Bob depth", j, "done")
+        print('Bob prot3 depth {} end, contents of R:'.format(j))
+        R[0].Y()
+        R[1].Y()
+        print('\n\n')
 
 
     #Bob measures in X basis

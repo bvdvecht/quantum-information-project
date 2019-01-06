@@ -2,8 +2,9 @@ from random import randint
 import time
 import copy
 from SimulaQron.cqc.pythonLib.cqc import CQCConnection, qubit
-from bqc.gates import PrimitiveGate, CompositeGate, TensorGate, EntangleGate
-from bqc.byproducts import Byproduct, XRecord, ZRecord
+# from bqc.gates import PrimitiveGate, CompositeGate, TensorGate, EntangleGate
+from bqc.gates2 import CompositeGate, TensorGate
+from bqc.gates2 import SimpleGate as SG
 
 import logging
 
@@ -15,27 +16,26 @@ def send_D_Plus(alice, m, D, key, key_prev):
     qubits = [qubit(alice) for i in range(m)]
     [ qb.H() for qb in qubits ]
     
-    D.applyOn(qubits)
+    D.applyTo(qubits)
     
     # create encryption gates
-    Z_prev = TensorGate(['Z' if bool(r) else 'I' for r in key_prev])
-    Z = TensorGate(['Z' if bool(r) else 'I' for r in key])
+    Z_prev = TensorGate([SG('Z') if bool(r) else SG('I') for r in key_prev])
+    Z = TensorGate([SG('Z') if bool(r) else SG('I') for r in key])
 
-    Z_prev.applyOn(qubits)
-    Z.applyOn(qubits)
+    Z_prev.applyTo(qubits)
+    Z.applyTo(qubits)
 
     
     for qb in qubits:
-        print('alice send_D_Plus: send qbit')
+        #print('alice send_D_Plus: send qbit')
         alice.sendQubit(qb, "Bob")
-        print('alice send_D_Plus: qbit sent')
+        #print('alice send_D_Plus: qbit sent')
 
 
 def createNextGate(m, D, measurements):
     # create tensor of X's (if meas=1) and I's (if meas=0)
-    X = TensorGate(['X' if m else 'I' for m in measurements])
-    D_dagger = copy.copy(D)
-    D_dagger.adjoint = True
+    X = TensorGate([SG('X') if m else SG('I') for m in measurements])
+    D_dagger = D.getDagger()
 
     # construct D_{l+1} = X_lD_lX_lD_dagger_l
     newD = CompositeGate([X, D, X, D_dagger])
@@ -51,10 +51,11 @@ def generate_key(m, no_encrypt):
 
 
 # set no_encrypt=True to have easier test case (all keys are 0)
-def protocol2(alice, m, l, D, no_encrypt=False):
-    print('alice prot2: L =', l)
-    cumul_meas = [ 0 for i in range(m) ]
+def protocol2(alice, m, l, D, no_encrypt=False, debug=False):
+    if debug:
+        print('Alice: starting protocol 2')
 
+    cumul_meas = [ 0 for i in range(m) ]
     key = [ 0 for i in range(m) ]
 
     # protocol 2
@@ -63,20 +64,20 @@ def protocol2(alice, m, l, D, no_encrypt=False):
         key_prev = key
         # generate new random key
         key = generate_key(m, no_encrypt)
-        
-        
+        if debug:
+            print('alice prot 2, sending gate D:', D)
         send_D_Plus(alice, m, D, key, key_prev)
 
-        logging.warning("     Alice waiting measurements")
+        #logging.warning("     Alice waiting measurements")
         measurements = []
         for j in range(m):
 
-            print("alice: receive measurement")
+            #print("alice: receive measurement")
             meas = alice.recvClassical(close_after=True, timout=10)
 
-            print('meas', int.from_bytes(meas, byteorder='big'))
+            #print('meas', int.from_bytes(meas, byteorder='big'))
             measurements.append(int.from_bytes(meas, byteorder='big'))
-            print("alice: measurement received")
+            #print("alice: measurement received")
 
         # XOR measurements to cumul_meas for step
         cumul_meas = [(cumul_meas[k] + measurements[k])%2 for k in range(m)]
@@ -84,7 +85,11 @@ def protocol2(alice, m, l, D, no_encrypt=False):
         # sleep since we don't use recvClassical atm which would block
         # time.sleep(5)
         D = createNextGate(m, D, measurements)
-        print('alice prot2 iteration', i, 'done')
+        if debug:
+            print("Alice prot2 iteration", i, "done")
+            print('X byproducts:', measurements)
+            print('key:', key)
+            print('\n')
 
     return cumul_meas, key
 
@@ -93,9 +98,9 @@ def protocol2(alice, m, l, D, no_encrypt=False):
 def recv_D_Plus(bob, m):
     Rprime = []
     for i in range(m):
-        print("bob recv_D_Plus: receive qubit")
+        #print("bob recv_D_Plus: receive qubit")
         Rprime.append(bob.recvQubit())
-        print("bob recv_D_Plus: qubit received")
+        #print("bob recv_D_Plus: qubit received")
 
     return Rprime
 
@@ -104,21 +109,28 @@ def teleport_proc(bob, m, R, Rprime):
     return [ qb.measure(inplace=False) for qb in R ]
 
 
-def protocol2_recv(bob, m, p, l, R):
-    print('bob prot2: L =', l)
+def protocol2_recv(bob, m, p, l, R, debug=False):
+    if debug:
+        print('Bob: starting protocol 2')
+
     subR = R[(p-1) * m : p * m]
 
     for i in range(l):
         Rprime = recv_D_Plus(bob, m)
         measurements = teleport_proc(bob, m, subR, Rprime)
         for j in range(m):
-            print("bob: send measurement")
+            #print("bob: send measurement")
             bob.sendClassical("Alice", measurements[j], close_after=True)
-            print("bob: measurement sent")
+            #print("bob: measurement sent")
 
         subR, Rprime = Rprime, subR
 
-        print("Bob prot2 iteration", i, "done")
+        if debug:
+            print("Bob prot2 iteration", i, "done")
+            print('Bob prot2 iteration {} end, contents of R:'.format(i))
+            for qb in subR:
+                qb.Y()
+            print('\n')
 
     tempR = R[0 : (p-1) * m]
     tempR.extend(subR)
