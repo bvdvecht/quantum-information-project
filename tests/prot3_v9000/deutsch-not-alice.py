@@ -1,6 +1,8 @@
 from SimulaQron.cqc.pythonLib.cqc import CQCConnection, qubit
 
-from bqc.gates import PrimitiveGate, CompositeGate, TensorGate, EntangleGate, CustomDiagonalGate
+# from bqc.gates import *
+from bqc.gates2 import TensorGate, RotZGate, ROT_PI_4, ROT_PI_2
+from bqc.gates2 import SimpleGate as SG
 from bqc.prot3_v9000 import compute_target_gate
 from bqc.prot3_v9000 import protocol3
 
@@ -24,40 +26,36 @@ def main():
         # measuring the output of Bob's circuit in the X basis implicitly applies the last H
         # gates needed for the Deutsch-Jozsa algorithm
 
-        J = 8 # Depth
+        J = 16 # Depth
         N = 2  # Number of qubits
         M = 2  # Number of sub-qubits : Must be a divider of N
         P = int(N / M)
         L = 3  # Number of steps for protocol2
 
-        D_gates = [ TensorGate([CustomDiagonalGate([0, 32]), 'Z']),\
-                        [ TensorGate([CustomDiagonalGate([-16, 16]), 'I']) ],\
-                        [ TensorGate(['Z', 'I']) ], \
-                        [ TensorGate([CustomDiagonalGate([16, -16]), 'I']) ],\
-                        [ TensorGate([CustomDiagonalGate([0, -32]), 'I']) ],\
-                        [ EntangleGate('CPHASE') ],\
-                        [ TensorGate(['Z', 'I']) ],\
-                        [ TensorGate(['I', 'I'])] ]
-
-        '''D_gates = [ TensorGate([CustomDiagonalGate([0, 32]), 'Z']),\
-                        [ TensorGate([CustomDiagonalGate([-16, 16]), 'I']) ],\
-                        [ TensorGate(['I', 'I']) ], \
-                        [ TensorGate(['I', 'I']) ], \
-                        [ TensorGate(['Z', 'I']) ], \
-                        [ TensorGate([CustomDiagonalGate([16, -16]), 'I']) ],\
-                        [ TensorGate(['I', 'I']) ],\
-                        [ TensorGate(['I', 'I']) ],\
-                        [ TensorGate([CustomDiagonalGate([0, -32]), 'I']) ],\
-                        [ EntangleGate('CPHASE') ],\
-                        [ TensorGate(['I', 'I']) ],\
-                        [ TensorGate(['I', 'I']) ],\
-                        [ TensorGate(['Z', 'I']) ],\
-                        [ TensorGate(['I', 'I'])] ]'''
-
+        D_gates = [ TensorGate([RotZGate(-ROT_PI_2), SG('Z')]),\
+                        [ TensorGate([RotZGate(-ROT_PI_4), SG('I')]) ],\
+                        [ TensorGate([SG('I'), SG('I')]) ], \
+                        [ TensorGate([SG('I'), SG('I')]) ], \
+                        [ TensorGate([SG('Z'), SG('I')]) ], \
+                        [ TensorGate([RotZGate(ROT_PI_4), SG('I')]) ],\
+                        [ TensorGate([SG('I'), SG('I')]) ],\
+                        [ TensorGate([SG('I'), SG('I')]) ],\
+                        [ TensorGate([RotZGate(ROT_PI_2), SG('I')]) ],\
+                        [ TensorGate([SG('I'), SG('I')])], \
+                        # until here: H on first qubit, X on second qubit
+                        [TensorGate([SG('I'), SG('I')])], \
+                        [TensorGate([SG('I'), SG('I')])], \
+                        [TensorGate([SG('Z'), SG('I')])], \
+                        [TensorGate([SG('I'), SG('I')])], \
+                        # cphase done here by Bob
+                        [TensorGate([SG('Z'), SG('I')])], \
+                        [TensorGate([SG('I'), SG('I')])] ]
 
         result = protocol3(alice, J=J, N=N, M=M, L=L, D_gates=D_gates, P=P)
 
         print('\nRESULT:', result)
+        type = 'balanced' if result[0] == 1 else 'constant'
+        print('--> f is', type)
 
 main()
 

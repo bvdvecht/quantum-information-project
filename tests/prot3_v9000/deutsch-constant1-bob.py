@@ -15,7 +15,7 @@ def main():
 
         # receive J from Alice
         print("Bob: receive J")
-        J = int.from_bytes(bob.recvClassical(close_after=True, timout=10), byteorder='big')
+        J = int.from_bytes(bob.recvClassical(close_after=True, timout=10000), byteorder='big')
         print('J =', J)
 
         protocol3_recv(bob, J=J, N=N, M=M, L=L, R=R, P=P)
