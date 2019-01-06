@@ -3,13 +3,15 @@ import time
 import copy
 from SimulaQron.cqc.pythonLib.cqc import CQCConnection, qubit
 
-from bqc.gates import PrimitiveGate, CompositeGate, TensorGate, EntangleGate
+#from bqc.gates import *
+from bqc.gates2 import RotZGate, TensorGate, ROT_PI_4
+from bqc.gates2 import SimpleGate as SG
 from bqc.prot1 import protocol1
 
 def main():
     with CQCConnection("Alice") as alice:  
         m = 2
-        l = 5
+        l = 3
 
         # psi = |+>^tensor(m)
         psi = [ qubit(alice) for i in range(m) ]
@@ -17,12 +19,15 @@ def main():
 
         # send psi to Bob
         for qb in psi:
-            print('alice: send psi qubit')
+            #print('alice: send psi qubit')
             alice.sendQubit(qb, "Bob")
-            print('alice: psi qubit sent')
+            #print('alice: psi qubit sent')
 
         # gate to be applied to psi
-        D = TensorGate(['Z', 'I'])
+        # D = TensorGate(['Z', 'I'])
+        #D = EntangleGate('CPHASE')
+        rot = RotZGate(-ROT_PI_4)
+        D = TensorGate([rot, SG('I')])
         print('initial gate D:', D)
 
         # sum of measurement results from Bob

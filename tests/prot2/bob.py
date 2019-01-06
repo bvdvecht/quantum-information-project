@@ -5,17 +5,23 @@ from bqc.prot2 import protocol2_recv
 def main():
     with CQCConnection("Bob") as bob:
         m = 2
-        l = 3
+        l = 1
+        p = 1
 
         R = []
 
         # receive initial psi from Alice
         for i in range(m):
-            print("bob: receiving psi qubit")
+            #print("bob: receiving psi qubit")
             R.append(bob.recvQubit())
-            print("bob: psi qubit received")
+            #print("bob: psi qubit received")
 
-        R = protocol2_recv(bob, m, 0, l, R)
+        print('initial state of Bob:')
+        for qb in R:
+            qb.Y()
+        print('\n')
+
+        R = protocol2_recv(bob, m, p, l, R, debug=True)
             
         # send result to Alice
         for qb in R:
