@@ -99,14 +99,8 @@ def protocol3(alice, J, N, L, D_gates, M, P):
     D = D_gates[0]
 
     keyprev = [ 0 for i in range(N) ]
-    # key = [ randint(0, 1) for i in range(N) ]
-
-    #########################
-    #######################
-    #########################
-    ## !!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    #########################
-    key = [ 0 for i in range(N) ]
+    key = [ randint(0, 1) for i in range(N) ]
+    # key = [ 0 for i in range(N) ]
     
     Z_1 = Byproduct(N)
     for k in range(1, N+1):
@@ -141,7 +135,7 @@ def protocol3(alice, J, N, L, D_gates, M, P):
             alice.sendClassical("Bob", 1, close_after=True)
 
             #Alice engages protocol 2 and saves the teleportation byproducts and her key
-            Xj, Zj = protocol2(alice, M, L, targetD, no_encrypt=True)
+            Xj, Zj = protocol2(alice, M, L, targetD, no_encrypt=False)
             print('alice iteration {} of prot3: prot2 returned:'.format(j))
             print('\tX:', Xj)
             print('\tZ:', Zj)

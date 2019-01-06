@@ -31,7 +31,7 @@ def main():
         #D = TensorGate([rot, SG('I')])
 
 
-        cumul_meas, key = protocol2(alice, m, l, D, debug=True, no_encrypt=True)
+        cumul_meas, key = protocol2(alice, m, l, D, debug=True, no_encrypt=False)
 
         
         result = []
