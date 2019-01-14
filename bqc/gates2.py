@@ -47,7 +47,12 @@ class TensorGate(PrimitiveGate):
     def applyTo(self, qubits):
         assert len(qubits) == self.dim
         for i in range(self.dim):
-            self.gates[i].applyTo(qubits[i])
+
+            if isinstance(self.gates[i], SimpleGate):
+                self.gates[i].applyTo(qubits[i])
+
+            elif isinstance(self.gates[i], EntangleGate):
+                self.gates[i].applyTo([qubits[i], qubits[i+1]])
 
     def getDagger(self):
         cp = copy.deepcopy(self)
