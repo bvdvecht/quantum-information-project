@@ -6,6 +6,8 @@ from SimulaQron.cqc.pythonLib.cqc import CQCConnection, qubit
 from bqc.gates2 import CompositeGate, TensorGate
 from bqc.gates2 import SimpleGate as SG
 
+CLASS_MSG_TIMEOUT_PROT1 = 100
+
 def send_D_Plus(alice, m, D):
     # print('alice: releasing all qubits')
     # alice.release_all_qubits()
@@ -48,7 +50,7 @@ def protocol1(alice, m, l, D):
         measurements = []
         for j in range(m):
             #print("alice: receive measurement")
-            meas = alice.recvClassical(close_after=True, timout=100000)
+            meas = alice.recvClassical(close_after=True, timout=CLASS_MSG_TIMEOUT_PROT1)
             #print('meas', int.from_bytes(meas, byteorder='big'))
             measurements.append(int.from_bytes(meas, byteorder='big'))
             #print("alice: measurement received")

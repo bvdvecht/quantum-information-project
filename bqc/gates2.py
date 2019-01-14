@@ -58,7 +58,11 @@ class TensorGate(PrimitiveGate):
         cp = copy.deepcopy(self)
         daggerGates = []
         for gate in cp.gates:
-            daggerGates.append(gate.getDagger())
+            if gate is None:
+                daggerGates.append(None)
+            else:
+                daggerGates.append(gate.getDagger())
+
         cp.gates = daggerGates
         return cp
 
@@ -109,7 +113,10 @@ class CompositeGate:
         cp = copy.deepcopy(self)
         revDaggergates = []
         for gate in reversed(cp.gates):
-            revDaggergates.append(gate.getDagger())
+            if gate is None:
+                revDaggergates.append(None)
+            else:
+                revDaggergates.append(gate.getDagger())
         cp.gates = revDaggergates
         return cp
 

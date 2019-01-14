@@ -8,6 +8,8 @@ from bqc.gates2 import SimpleGate as SG
 
 import logging
 
+CLASS_MSG_TIMEOUT_PROT2 = 100
+
 # key and key_prev are Z_l and Z_{l-1} 
 def send_D_Plus(alice, m, D, key, key_prev):
     alice.release_all_qubits()
@@ -73,7 +75,7 @@ def protocol2(alice, m, l, D, no_encrypt=False, debug=False):
         for j in range(m):
 
             #print("alice: receive measurement")
-            meas = alice.recvClassical(close_after=True, timout=10)
+            meas = alice.recvClassical(close_after=True, timout=CLASS_MSG_TIMEOUT_PROT2)
 
             #print('meas', int.from_bytes(meas, byteorder='big'))
             measurements.append(int.from_bytes(meas, byteorder='big'))

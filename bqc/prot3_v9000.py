@@ -6,6 +6,8 @@ from bqc.prot2 import protocol2, send_D_Plus, protocol2_recv, recv_D_Plus
 from bqc.byproducts import Byproduct, XRecord, ZRecord
 import logging
 
+CLASS_MSG_TIMEOUT_PROT3 = 100
+
 
 def compute_target_gate_simple(j, p, N, M, X_record, Z_record, D):
     H = TensorGate([SG('H') for i in range(M)])
@@ -135,7 +137,7 @@ def protocol3(alice, J, N, L, D_gates, M, P):
             alice.sendClassical("Bob", 1, close_after=True)
 
             #Alice engages protocol 2 and saves the teleportation byproducts and her key
-            Xj, Zj = protocol2(alice, M, L, targetD, no_encrypt=False)
+            Xj, Zj = protocol2(alice, M, L, targetD, no_encrypt=False, debug=False)
             print('alice iteration {} of prot3: prot2 returned:'.format(j))
             print('\tX:', Xj)
             print('\tZ:', Zj)
@@ -154,7 +156,7 @@ def protocol3(alice, J, N, L, D_gates, M, P):
     measurements = []
     for i in range(N):
         #print("alice: receive measurement")
-        meas = alice.recvClassical(close_after=True, timout=10)
+        meas = alice.recvClassical(close_after=True, timout=CLASS_MSG_TIMEOUT_PROT3)
         print('alice: recveived final measurement:', int.from_bytes(meas, byteorder='big'))
         measurements.append(int.from_bytes(meas, byteorder='big'))
         #print("alice: measurement received")
@@ -197,7 +199,7 @@ def protocol3_recv(bob, J, N, M, P, L, R):
 
         for p in range(1, P + 1):
             #Wait for alice to be ready and avoid timeout
-            flag = bob.recvClassical(close_after=True, timout=10)
+            flag = bob.recvClassical(close_after=True, timout=CLASS_MSG_TIMEOUT_PROT3)
 
             #Engage protocol 2
             R = protocol2_recv(bob, M, p, L, R)
