@@ -86,7 +86,7 @@ def compute_target_gate(j, p, N, M, X_record, Z_record, D):
     return targetD
 
 
-def protocol3(alice, J, N, L, D_gates, M, P):
+def protocol3(alice, J, N, L, D_gates, M, P, debug=False):
     X_record = XRecord(N)
     Z_record = ZRecord(N)
 
@@ -130,8 +130,9 @@ def protocol3(alice, J, N, L, D_gates, M, P):
         for p in range(1, P + 1):
             print('p =', p)
             targetD = compute_target_gate(j, p, N, M, X_record, Z_record, D_gates[j-1][p-1])
-            print('alice iteration {} targetD:'.format(j))
-            print(targetD)
+            if debug:
+                print('alice iteration {} targetD:'.format(j))
+                print(targetD)
 
             #Send flag to Bob when ready
             alice.sendClassical("Bob", 1, close_after=True)
@@ -175,7 +176,7 @@ def protocol3_recv(bob, J, N, M, P, L, R):
 
     print('Bob end of iteration 1, contents of R:')
     R[0].Y()
-    R[1].Y()
+    # R[1].Y()
     print('\n\n')
     
     for j in range(2, J + 1):
@@ -186,7 +187,7 @@ def protocol3_recv(bob, J, N, M, P, L, R):
             [ R[i].cphase(R[i + 1]) for i in range(N - 1) ]
             print('Bob iteration {}, contents of R just after CZ:'.format(j))
             R[0].Y()
-            R[1].Y()
+            # R[1].Y()
             print('\n\n')
 
         #Bob applies H
@@ -194,7 +195,7 @@ def protocol3_recv(bob, J, N, M, P, L, R):
         [ qb.H() for qb in R ]
         print('Bob iteration {}, contents of R just after H:'.format(j))
         R[0].Y()
-        R[1].Y()
+        # R[1].Y()
         print('\n\n')
 
         for p in range(1, P + 1):
@@ -207,7 +208,7 @@ def protocol3_recv(bob, J, N, M, P, L, R):
         print("Bob depth", j, "done")
         print('Bob prot3 depth {} end, contents of R:'.format(j))
         R[0].Y()
-        R[1].Y()
+        # R[1].Y()
         print('\n\n')
 
 

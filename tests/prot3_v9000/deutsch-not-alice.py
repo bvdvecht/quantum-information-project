@@ -26,12 +26,6 @@ def main():
         # measuring the output of Bob's circuit in the X basis implicitly applies the last H
         # gates needed for the Deutsch-Jozsa algorithm
 
-        J = 16 # Depth
-        N = 2  # Number of qubits
-        M = 2  # Number of sub-qubits : Must be a divider of N
-        P = int(N / M)
-        L = 3  # Number of steps for protocol2
-
         D_gates = [ TensorGate([RotZGate(-ROT_PI_2), SG('Z')]),\
                         [ TensorGate([RotZGate(-ROT_PI_4), SG('I')]) ],\
                         [ TensorGate([SG('I'), SG('I')]) ], \
@@ -51,7 +45,14 @@ def main():
                         [TensorGate([SG('Z'), SG('I')])], \
                         [TensorGate([SG('I'), SG('I')])] ]
 
-        result = protocol3(alice, J=J, N=N, M=M, L=L, D_gates=D_gates, P=P)
+        # J = 2  # Depth
+        J = len(D_gates)
+        N = 2  # Number of qubits
+        M = 2  # Number of sub-qubits : Must be a divider of N
+        P = int(N / M)
+        L = 3  # Number of steps for protocol2
+
+        result = protocol3(alice, J=J, N=N, M=M, L=L, D_gates=D_gates, P=P, debug=True)
 
         print('\nRESULT:', result)
         type = 'balanced' if result[0] == 1 else 'constant'
