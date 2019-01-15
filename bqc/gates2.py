@@ -48,7 +48,7 @@ class TensorGate(PrimitiveGate):
         assert len(qubits) == self.dim
         for i in range(self.dim):
 
-            if isinstance(self.gates[i], SimpleGate):
+            if isinstance(self.gates[i], SimpleGate) or isinstance(self.gates[i], RotZGate):
                 self.gates[i].applyTo(qubits[i])
 
             elif isinstance(self.gates[i], EntangleGate):
