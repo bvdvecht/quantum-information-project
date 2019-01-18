@@ -1,10 +1,8 @@
-from SimulaQron.cqc.pythonLib.cqc import CQCConnection, qubit
+from SimulaQron.cqc.pythonLib.cqc import CQCConnection
 
-# from bqc.gates import *
 from bqc.gates import TensorGate, RotZGate, ROT_PI_4, ROT_PI_2
 from bqc.gates import SimpleGate as SG
-from bqc.prot3 import compute_target_gate
-from bqc.prot3 import protocol3
+from bqc.prot3 import protocol3_send
 
 
 def main():
@@ -52,7 +50,7 @@ def main():
         P = int(N / M)
         L = 3  # Number of steps for protocol2
 
-        result = protocol3(alice, J=J, N=N, M=M, L=L, D_gates=D_gates, P=P, debug=True)
+        result = protocol3_send(alice, J=J, N=N, M=M, L=L, D_gates=D_gates, P=P, debug=True)
 
         print('\nRESULT:', result)
         type = 'balanced' if result[0] == 1 else 'constant'

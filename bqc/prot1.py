@@ -34,7 +34,7 @@ def createNextGate(m, D, measurements):
     return newD
 
 
-def protocol1(alice, m, l, D):
+def protocol1_send(alice, m, l, D):
     print('Alice: starting protocol 1')
 
     cumul_meas = [ 0 for i in range(m) ]

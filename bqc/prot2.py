@@ -50,7 +50,7 @@ def generate_key(m, no_encrypt):
 
 
 # set no_encrypt=True to have easier test case (all keys are 0)
-def protocol2(alice, m, l, D, no_encrypt=False, debug=False):
+def protocol2_send(alice, m, l, D, no_encrypt=False, debug=False):
     if debug:
         print('Alice: starting protocol 2')
 

@@ -2,7 +2,7 @@ from SimulaQron.cqc.pythonLib.cqc import CQCConnection, qubit
 
 from bqc.gates import RotZGate, TensorGate, ROT_PI_4
 from bqc.gates import SimpleGate as SG
-from bqc.prot1 import protocol1
+from bqc.prot1 import protocol1_send
 
 def main():
     with CQCConnection("Alice") as alice:  
@@ -27,7 +27,7 @@ def main():
         print('initial gate D:', D)
 
         # sum of measurement results from Bob
-        cumul_meas = protocol1(alice, m, l, D)
+        cumul_meas = protocol1_send(alice, m, l, D)
         
         result = []
         for i in range(m):

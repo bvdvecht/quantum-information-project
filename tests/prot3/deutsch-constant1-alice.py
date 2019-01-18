@@ -2,7 +2,7 @@ from SimulaQron.cqc.pythonLib.cqc import CQCConnection
 
 from bqc.gates import TensorGate
 from bqc.gates import SimpleGate as SG
-from bqc.prot3 import protocol3
+from bqc.prot3 import protocol3_send
 
 
 def main():
@@ -39,7 +39,7 @@ def main():
                     [ TensorGate([SG('I'), SG('I')]) ], ]
 
 
-        result = protocol3(alice, J=J, N=N, M=M, L=L, D_gates=D_gates, P=P)
+        result = protocol3_send(alice, J=J, N=N, M=M, L=L, D_gates=D_gates, P=P)
 
         print('\nRESULT:', result)
         type = 'balanced' if result[0] == 1 else 'constant'

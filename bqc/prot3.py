@@ -2,7 +2,7 @@ from random import randint
 
 from bqc.gates import CompositeGate, TensorGate
 from bqc.gates import SimpleGate as SG
-from bqc.prot2 import protocol2, send_D_Plus, protocol2_recv, recv_D_Plus
+from bqc.prot2 import protocol2_send, send_D_Plus, protocol2_recv, recv_D_Plus
 from bqc.byproducts import Byproduct, XRecord, ZRecord
 
 CLASS_MSG_TIMEOUT_PROT3 = 100
@@ -85,7 +85,7 @@ def compute_target_gate(j, p, N, M, X_record, Z_record, D):
     return targetD
 
 
-def protocol3(alice, J, N, L, D_gates, M, P, debug=False):
+def protocol3_send(alice, J, N, L, D_gates, M, P, debug=False):
     X_record = XRecord(N)
     Z_record = ZRecord(N)
 
@@ -137,7 +137,7 @@ def protocol3(alice, J, N, L, D_gates, M, P, debug=False):
             alice.sendClassical("Bob", 1, close_after=True)
 
             #Alice engages protocol 2 and saves the teleportation byproducts and her key
-            Xj, Zj = protocol2(alice, M, L, targetD, no_encrypt=False, debug=False)
+            Xj, Zj = protocol2_send(alice, M, L, targetD, no_encrypt=False, debug=False)
             print('alice iteration {} of prot3: prot2 returned:'.format(j))
             print('\tX:', Xj)
             print('\tZ:', Zj)

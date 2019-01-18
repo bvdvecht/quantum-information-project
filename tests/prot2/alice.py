@@ -2,7 +2,7 @@ from SimulaQron.cqc.pythonLib.cqc import CQCConnection, qubit
 
 from bqc.gates import TensorGate
 from bqc.gates import SimpleGate as SG
-from bqc.prot2 import protocol2
+from bqc.prot2 import protocol2_send
 
 
 def main():
@@ -27,7 +27,7 @@ def main():
         #D = TensorGate([rot, SG('I')])
 
 
-        cumul_meas, key = protocol2(alice, m, l, D, debug=True, no_encrypt=False)
+        cumul_meas, key = protocol2_send(alice, m, l, D, debug=True, no_encrypt=False)
 
         
         result = []
