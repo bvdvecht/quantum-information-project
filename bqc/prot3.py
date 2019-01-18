@@ -1,7 +1,7 @@
 from random import randint
 
-from bqc.gates2 import CompositeGate, TensorGate
-from bqc.gates2 import SimpleGate as SG
+from bqc.gates import CompositeGate, TensorGate
+from bqc.gates import SimpleGate as SG
 from bqc.prot2 import protocol2, send_D_Plus, protocol2_recv, recv_D_Plus
 from bqc.byproducts import Byproduct, XRecord, ZRecord
 

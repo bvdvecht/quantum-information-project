@@ -1,7 +1,7 @@
 from SimulaQron.cqc.pythonLib.cqc import qubit
 
-from bqc.gates2 import CompositeGate, TensorGate
-from bqc.gates2 import SimpleGate as SG
+from bqc.gates import CompositeGate, TensorGate
+from bqc.gates import SimpleGate as SG
 
 CLASS_MSG_TIMEOUT_PROT1 = 100
 

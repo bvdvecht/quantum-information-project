@@ -1,6 +1,6 @@
 from SimulaQron.cqc.pythonLib.cqc import CQCConnection, qubit
 
-from bqc.prot3_v9000 import protocol3_recv
+from bqc.prot3 import protocol3_recv
 
 
 def main():

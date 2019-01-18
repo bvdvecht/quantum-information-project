@@ -1,8 +1,8 @@
 from SimulaQron.cqc.pythonLib.cqc import CQCConnection
 
-from bqc.gates2 import TensorGate
-from bqc.gates2 import SimpleGate as SG
-from bqc.prot3_v9000 import protocol3
+from bqc.gates import TensorGate
+from bqc.gates import SimpleGate as SG
+from bqc.prot3 import protocol3
 
 
 def main():
@@ -28,15 +28,15 @@ def main():
 
         J = 5  # Depth
         N = 2  # Number of qubits
-        M = 1  # Number of sub-qubits : Must be a divider of N
+        M = 2  # Number of sub-qubits : Must be a divider of N
         P = int(N / M)
         L = 3  # Number of steps for protocol2
 
         D_gates = [ TensorGate([SG('I'), SG('Z')]),\
-                    [ TensorGate([SG('I')]), TensorGate([SG('I')]) ],\
-                    [ TensorGate([SG('I')]), TensorGate([SG('I')]) ], \
-                    [ TensorGate([SG('I')]), TensorGate([SG('Z')]) ], \
-                    [ TensorGate([SG('I')]), TensorGate([SG('I')]) ], ]
+                    [ TensorGate([SG('I'), SG('I')]) ],\
+                    [ TensorGate([SG('I'), SG('I')]) ], \
+                    [ TensorGate([SG('I'), SG('Z')]) ], \
+                    [ TensorGate([SG('I'), SG('I')]) ], ]
 
 
         result = protocol3(alice, J=J, N=N, M=M, L=L, D_gates=D_gates, P=P)

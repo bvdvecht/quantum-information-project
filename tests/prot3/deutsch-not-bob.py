@@ -1,13 +1,13 @@
-from SimulaQron.cqc.pythonLib.cqc import CQCConnection, qubit
+from SimulaQron.cqc.pythonLib.cqc import CQCConnection
 
-from bqc.prot3_v9000 import protocol3_recv
+from bqc.prot3 import protocol3_recv
 
 
 def main():
     with CQCConnection("Bob") as bob:
 
-        N = 3 #Number of qubits
-        M = 3 #Number of sub-qubits : Must be a divider of N
+        N = 2 #Number of qubits
+        M = 2 #Number of sub-qubits : Must be a divider of N
         P = int(N/M)
         L = 3 #Number of steps for protocol2
 

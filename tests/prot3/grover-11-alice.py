@@ -1,8 +1,8 @@
 from SimulaQron.cqc.pythonLib.cqc import CQCConnection
 
-from bqc.gates2 import TensorGate, EntangleGate
-from bqc.gates2 import SimpleGate as SG
-from bqc.prot3_v9000 import protocol3
+from bqc.gates import TensorGate, EntangleGate
+from bqc.gates import SimpleGate as SG
+from bqc.prot3 import protocol3
 
 
 def main():

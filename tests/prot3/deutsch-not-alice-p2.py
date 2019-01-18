@@ -1,10 +1,8 @@
-from SimulaQron.cqc.pythonLib.cqc import CQCConnection, qubit
+from SimulaQron.cqc.pythonLib.cqc import CQCConnection
 
-# from bqc.gates import *
-from bqc.gates2 import TensorGate, RotZGate, ROT_PI_4, ROT_PI_2
-from bqc.gates2 import SimpleGate as SG
-from bqc.prot3_v9000 import compute_target_gate
-from bqc.prot3_v9000 import protocol3
+from bqc.gates import TensorGate, RotZGate, ROT_PI_4, ROT_PI_2
+from bqc.gates import SimpleGate as SG
+from bqc.prot3 import protocol3
 
 
 def main():
@@ -26,33 +24,32 @@ def main():
         # measuring the output of Bob's circuit in the X basis implicitly applies the last H
         # gates needed for the Deutsch-Jozsa algorithm
 
-        D_gates = [ TensorGate([RotZGate(-ROT_PI_2), SG('Z')]),\
-                        [ TensorGate([RotZGate(-ROT_PI_4), SG('I')]) ],\
-                        [ TensorGate([SG('I'), SG('I')]) ], \
-                        [ TensorGate([SG('I'), SG('I')]) ], \
-                        [ TensorGate([SG('Z'), SG('I')]) ], \
-                        [ TensorGate([RotZGate(ROT_PI_4), SG('I')]) ],\
-                        [ TensorGate([SG('I'), SG('I')]) ],\
-                        [ TensorGate([SG('I'), SG('I')]) ],\
-                        [ TensorGate([RotZGate(ROT_PI_2), SG('I')]) ],\
-                        [ TensorGate([SG('I'), SG('I')])], \
-                        # until here: H on first qubit, X on second qubit
-                        [TensorGate([SG('I'), SG('I')])], \
-                        [TensorGate([SG('I'), SG('I')])], \
-                        [TensorGate([SG('Z'), SG('I')])], \
-                        [TensorGate([SG('I'), SG('I')])], \
-                        # cphase done here by Bob
-                        [TensorGate([SG('Z'), SG('I')])], \
-                        [TensorGate([SG('I'), SG('I')])] ]
-
-        # J = 2  # Depth
-        J = len(D_gates)
+        J = 16 # Depth
         N = 2  # Number of qubits
-        M = 2  # Number of sub-qubits : Must be a divider of N
+        M = 1  # Number of sub-qubits : Must be a divider of N
         P = int(N / M)
         L = 3  # Number of steps for protocol2
 
-        result = protocol3(alice, J=J, N=N, M=M, L=L, D_gates=D_gates, P=P, debug=True)
+        D_gates = [ TensorGate([RotZGate(-ROT_PI_2), SG('Z')]),\
+                        [ TensorGate([RotZGate(-ROT_PI_4)]), TensorGate([SG('I')]) ],\
+                        [ TensorGate([SG('I')]), TensorGate([SG('I')]) ], \
+                        [ TensorGate([SG('I')]), TensorGate([SG('I')]) ], \
+                        [ TensorGate([SG('Z')]), TensorGate([SG('I')]) ], \
+                        [ TensorGate([RotZGate(ROT_PI_4)]), TensorGate([SG('I')]) ],\
+                        [ TensorGate([SG('I')]), TensorGate([SG('I')]) ],\
+                        [ TensorGate([SG('I')]), TensorGate([SG('I')]) ],\
+                        [ TensorGate([RotZGate(ROT_PI_2)]), TensorGate([SG('I')]) ],\
+                        [ TensorGate([SG('I')]), TensorGate([SG('I')])], \
+                        # until here: H on first qubit, X on second qubit
+                        [TensorGate([SG('I')]), TensorGate([SG('I')])], \
+                        [TensorGate([SG('I')]), TensorGate([SG('I')])], \
+                        [TensorGate([SG('Z')]), TensorGate([SG('I')])], \
+                        [TensorGate([SG('I')]), TensorGate([SG('I')])], \
+                        # cphase done here by Bob
+                        [TensorGate([SG('Z')]), TensorGate([SG('I')])], \
+                        [TensorGate([SG('I')]), TensorGate([SG('I')])] ]
+
+        result = protocol3(alice, J=J, N=N, M=M, L=L, D_gates=D_gates, P=P)
 
         print('\nRESULT:', result)
         type = 'balanced' if result[0] == 1 else 'constant'
