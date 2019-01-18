@@ -1,4 +1,4 @@
-from SimulaQron.cqc.pythonLib.cqc import CQCConnection, qubit
+from SimulaQron.cqc.pythonLib.cqc import CQCConnection
 from bqc.prot1 import protocol1_recv
 
 def main():

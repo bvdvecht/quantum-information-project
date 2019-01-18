@@ -1,10 +1,6 @@
-from random import randint
-import time
-import copy
 from SimulaQron.cqc.pythonLib.cqc import CQCConnection, qubit
 
-# from bqc.gates import *
-from bqc.gates2 import RotZGate, ROT_PI_4, ROT_PI_2, TensorGate, CompositeGate
+from bqc.gates2 import TensorGate
 from bqc.gates2 import SimpleGate as SG
 from bqc.prot2 import protocol2
 

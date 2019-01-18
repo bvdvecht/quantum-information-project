@@ -1,12 +1,9 @@
 from random import randint
-import time
-import copy
-from SimulaQron.cqc.pythonLib.cqc import CQCConnection, qubit
-# from bqc.gates import PrimitiveGate, CompositeGate, TensorGate, EntangleGate
+
+from SimulaQron.cqc.pythonLib.cqc import qubit
+
 from bqc.gates2 import CompositeGate, TensorGate
 from bqc.gates2 import SimpleGate as SG
-
-import logging
 
 CLASS_MSG_TIMEOUT_PROT2 = 100
 

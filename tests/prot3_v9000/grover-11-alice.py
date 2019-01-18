@@ -1,4 +1,4 @@
-from SimulaQron.cqc.pythonLib.cqc import CQCConnection, qubit
+from SimulaQron.cqc.pythonLib.cqc import CQCConnection
 
 from bqc.gates2 import TensorGate, EntangleGate
 from bqc.gates2 import SimpleGate as SG

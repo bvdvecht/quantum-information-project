@@ -1,9 +1,7 @@
-from SimulaQron.cqc.pythonLib.cqc import CQCConnection, qubit
+from SimulaQron.cqc.pythonLib.cqc import CQCConnection
 
-# from bqc.gates import *
 from bqc.gates2 import TensorGate, RotZGate, ROT_PI_4, ROT_PI_2
 from bqc.gates2 import SimpleGate as SG
-from bqc.prot3_v9000 import compute_target_gate
 from bqc.prot3_v9000 import protocol3
 
 
