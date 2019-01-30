@@ -7,5 +7,4 @@ The `bqc` folder contains the implementation of the protocols. The `tests` folde
 All tests have been successfully run on Windows systems, and for this a slightly modified version of SimulaQron was needed: https://github.com/bvdvecht/SimulaQron. Also, the `killAllProc.sh` script in the current repository needs to be run in between test cases on Windows. On Linux systems, everything *should* simply work, but this has not been tested.
 
 Authors:
-Bart van der Vecht
-Boris Joukovsky
+Bart van der Vecht and Boris Joukovsky
