@@ -26,6 +26,8 @@ def main():
         # measuring the output of Bob's circuit in the X basis implicitly applies the last H
         # gates needed for the Deutsch-Jozsa algorithm
 
+        # here, P = 2, meaning that Alice only uses one qubit at a time!
+
         J = 5  # Depth
         N = 2  # Number of qubits
         M = 1  # Number of sub-qubits : Must be a divider of N
