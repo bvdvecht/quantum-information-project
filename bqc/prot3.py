@@ -118,7 +118,7 @@ def protocol3_send(alice, J, N, L, D_gates, M, P, debug=False):
     #-------------#
 
     for j in range(2, J + 1):
-        print('ITERATION', j)
+        print('\n\nALICE ITERATION', j)
 
         xbyprod = Byproduct(N)
         X_record.set(j, xbyprod)
@@ -174,7 +174,7 @@ def protocol3_recv(bob, J, N, M, P, L, R):
     R = recv_D_Plus(bob, N)
 
     print('Bob end of iteration 1, contents of R:')
-    R[0].Y()
+    # R[0].Y()
     # R[1].Y()
     print('\n\n')
     
@@ -185,7 +185,7 @@ def protocol3_recv(bob, J, N, M, P, L, R):
             print('APPLYING CPHASE')
             [ R[i].cphase(R[i + 1]) for i in range(N - 1) ]
             print('Bob iteration {}, contents of R just after CZ:'.format(j))
-            R[0].Y()
+            # R[0].Y()
             # R[1].Y()
             print('\n\n')
 
@@ -193,7 +193,7 @@ def protocol3_recv(bob, J, N, M, P, L, R):
         print('APPLYING H')
         [ qb.H() for qb in R ]
         print('Bob iteration {}, contents of R just after H:'.format(j))
-        R[0].Y()
+        # R[0].Y()
         # R[1].Y()
         print('\n\n')
 
@@ -206,7 +206,7 @@ def protocol3_recv(bob, J, N, M, P, L, R):
 
         print("Bob depth", j, "done")
         print('Bob prot3 depth {} end, contents of R:'.format(j))
-        R[0].Y()
+        # R[0].Y()
         # R[1].Y()
         print('\n\n')
 

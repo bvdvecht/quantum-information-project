@@ -127,8 +127,8 @@ def protocol2_recv(bob, m, p, l, R, debug=False):
         if debug:
             print("Bob prot2 iteration", i, "done")
             print('Bob prot2 iteration {} end, contents of R:'.format(i))
-            for qb in subR:
-                qb.Y()
+            # for qb in subR:
+                # qb.Y()
             print('\n')
 
     tempR = R[0 : (p-1) * m]
